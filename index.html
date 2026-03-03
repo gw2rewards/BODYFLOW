@@ -406,7 +406,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     <div class="settings-row" onclick="exportData()"><div class="s-left"><div class="s-icon" style="background:#EFF6FF">💾</div><div><div class="s-label">Sauvegarder mes données</div><div class="s-sub">Export JSON de l'historique</div></div></div><span class="s-arrow">↓</span></div>
     <div class="settings-row" onclick="resetData()"><div class="s-left"><div class="s-icon" style="background:#FEF2F2">🗑️</div><div><div class="s-label">Réinitialiser</div><div class="s-sub">Effacer tout l'historique</div></div></div><span class="s-arrow">→</span></div>
   </div>
-  <div style="text-align:center;color:var(--muted);font-size:12px;padding:20px 0">BodyFlow v1.3 · Pour Boris 💪</div>
+  <div style="text-align:center;color:var(--muted);font-size:12px;padding:20px 0">BodyFlow v1.4 · Pour Boris 💪</div>
 </div>
 
 <!-- NAV -->
@@ -1149,20 +1149,41 @@ function toggleNotif(){
 function sendTestNotif(){
   if(Notification.permission==='granted'){const type=getNextType();new Notification('BodyFlow 💪 — Test',{body:`Séance ${type} · ${SESSIONS[type].name}`,tag:'bf-test'});}
 }
+// SW-based alarms — fonctionnent même app fermée
 let alarmTimeouts=[];
 function clearAlarms(){alarmTimeouts.forEach(t=>clearTimeout(t));alarmTimeouts=[];}
-function scheduleAlarms(){
-  clearAlarms();if(!state.notifications||!state.trainingDays.length)return;
+
+async function getActiveSW(){
+  if(!('serviceWorker'in navigator))return null;
+  const reg=await navigator.serviceWorker.getRegistration('/BODYFLOW/');
+  return reg&&reg.active?reg:null;
+}
+
+async function scheduleAlarms(){
+  clearAlarms();
+  if(!state.notifications||!state.trainingDays.length)return;
   const[hh,mm]=(state.notifTime||'19:00').split(':').map(Number);
   const now=new Date();
+  const sw=await getActiveSW();
+
   for(let off=0;off<7;off++){
     const d=new Date(now);d.setDate(now.getDate()+off);
     if(!state.trainingDays.includes(d.getDay()))continue;
     d.setHours(hh,mm,0,0);
     const delay=d.getTime()-now.getTime();
-    if(delay>0&&delay<7*24*3600*1000){
+    if(delay<=0||delay>=7*24*3600*1000)continue;
+    const type=getNextType();
+    const title='BodyFlow 💪 — Séance du jour !';
+    const body=`Séance ${type} · ${SESSIONS[type].name} · C'est l'heure !`;
+
+    if(sw){
+      // Via Service Worker → fonctionne app fermée
+      sw.active.postMessage({type:'SCHEDULE_NOTIFICATION',delay,title,body});
+    }else{
+      // Fallback setTimeout → fonctionne onglet ouvert seulement
       alarmTimeouts.push(setTimeout(()=>{
-        if(Notification.permission==='granted'){const type=getNextType();new Notification('BodyFlow 💪',{body:`Séance ${type} · ${SESSIONS[type].name} — C'est l'heure !`,tag:'bf-workout'});}
+        if(Notification.permission==='granted')
+          new Notification(title,{body,tag:'bf-workout',icon:'/BODYFLOW/icon-192.png'});
       },delay));
     }
   }
@@ -1241,6 +1262,21 @@ window.addEventListener('beforeinstallprompt',e=>{
 // ============================================================
 // INIT
 // ============================================================
+
+// Enregistrement Service Worker
+if('serviceWorker'in navigator){
+  navigator.serviceWorker.register('/BODYFLOW/sw.js')
+    .then(reg=>{
+      console.log('BodyFlow SW enregistré',reg.scope);
+      // Re-planifie les alarmes via SW dès qu'il est actif
+      if(state.notifications){
+        reg.addEventListener('updatefound',()=>scheduleAlarms());
+        scheduleAlarms();
+      }
+    })
+    .catch(err=>console.warn('SW non enregistré :',err));
+}
+
 loadState();
 renderProgramme();
 updateToday();
