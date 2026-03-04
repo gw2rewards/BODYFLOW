@@ -1146,8 +1146,37 @@ function toggleNotif(){
     });
   }else{state.notifications=false;clearAlarms();saveState();updateNotifUI();}
 }
-function sendTestNotif(){
-  if(Notification.permission==='granted'){const type=getNextType();new Notification('BodyFlow 💪 — Test',{body:`Séance ${type} · ${SESSIONS[type].name}`,tag:'bf-test'});}
+async function sendTestNotif(){
+  if(Notification.permission!=='granted'){
+    alert('Permission notifications non accordée. Active-la dans les réglages du navigateur.');return;
+  }
+  const type=getNextType();
+  const title='BodyFlow 💪 — Test';
+  const body=`Séance ${type} · ${SESSIONS[type].name} · Notifications opérationnelles !`;
+
+  // Priorité : Service Worker (seule méthode qui marche sur Chrome Android)
+  try{
+    const reg=await navigator.serviceWorker.getRegistration('/BODYFLOW/');
+    if(reg){
+      await reg.showNotification(title,{body,icon:'/BODYFLOW/icon-192.png',tag:'bf-test',renotify:true});
+      showToast('Notification envoyée 🔔');return;
+    }
+  }catch(e){}
+
+  // Fallback desktop uniquement
+  try{
+    new Notification(title,{body,tag:'bf-test'});
+    showToast('Notification envoyée 🔔');
+  }catch(e){
+    alert('Échec — recharge la page une fois pour activer le Service Worker, puis réessaie.');
+  }
+}
+
+function showToast(msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#1A1A1A;color:#fff;padding:12px 20px;border-radius:50px;font-size:13px;font-weight:600;z-index:999;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.3)';
+  t.textContent=msg;document.body.appendChild(t);
+  setTimeout(()=>t.remove(),3000);
 }
 // SW-based alarms — fonctionnent même app fermée
 let alarmTimeouts=[];
