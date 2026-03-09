@@ -310,6 +310,22 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     <div class="stat-card"><div class="stat-num" id="stat-total" style="color:var(--blue)">0</div><div class="stat-label">Séances au total</div></div>
   </div>
 
+  <!-- Streak + last perf card -->
+  <div class="card" id="streak-perf-card" style="display:none;padding:16px 20px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Ton streak</div>
+        <div style="font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:var(--coral)" id="streak-big">0🔥</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px" id="streak-sub">semaines consécutives</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Dernières pompes</div>
+        <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;color:var(--green)" id="last-reps-display">—</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">reps (moy. séries)</div>
+      </div>
+    </div>
+  </div>
+
   <div class="card" id="next-session-card" style="display:none">
     <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Prochaine séance</div>
     <div style="font-weight:700;font-size:15px" id="next-session-text"></div>
@@ -401,12 +417,25 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     </div>
   </div>
   <div class="settings-section">
+    <div class="settings-title">Échauffement</div>
+    <div class="settings-row" onclick="toggleCorde()">
+      <div class="s-left">
+        <div class="s-icon" style="background:#ECFDF5">🪢</div>
+        <div>
+          <div class="s-label">Corde à sauter</div>
+          <div class="s-sub" id="corde-sub">Jumping jacks (actif)</div>
+        </div>
+      </div>
+      <div class="toggle" id="corde-toggle"></div>
+    </div>
+  </div>
+  <div class="settings-section">
     <div class="settings-title">Export & données</div>
     <div class="settings-row" onclick="exportICS()"><div class="s-left"><div class="s-icon" style="background:#ECFDF5">📅</div><div><div class="s-label">Exporter .ics</div><div class="s-sub">Importer dans Google Agenda</div></div></div><span class="s-arrow">↓</span></div>
     <div class="settings-row" onclick="exportData()"><div class="s-left"><div class="s-icon" style="background:#EFF6FF">💾</div><div><div class="s-label">Sauvegarder mes données</div><div class="s-sub">Export JSON de l'historique</div></div></div><span class="s-arrow">↓</span></div>
     <div class="settings-row" onclick="resetData()"><div class="s-left"><div class="s-icon" style="background:#FEF2F2">🗑️</div><div><div class="s-label">Réinitialiser</div><div class="s-sub">Effacer tout l'historique</div></div></div><span class="s-arrow">→</span></div>
   </div>
-  <div style="text-align:center;color:var(--muted);font-size:12px;padding:20px 0">BodyFlow v1.4 · Pour Boris 💪</div>
+  <div style="text-align:center;color:var(--muted);font-size:12px;padding:20px 0">BodyFlow v1.6 · Pour Boris 💪</div>
 </div>
 
 <!-- NAV -->
@@ -468,83 +497,103 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 // Pour reps : sets × target. Progression par +2 reps toutes les 2 séances.
 // Pour timed : sets × seconds. Progression par +5s tous les 2 cycles.
 // threshold = seuil déclencheur "prêt à progresser"
-const SESSIONS = {
+// getSessions() lit state.useCorde pour switcher l'échauffement
+function getSessions(){
+  const cardio = state.useCorde ? {
+    id_a:'a1c', id_b:'b1c',
+    name:'Corde à sauter', exType:'cardio', sets:3, repsTarget:60, restSecs:30,
+    why:'Échauffement cardio intense, améliore la coordination et l\'endurance.',
+    technique:['Sauts légers sur l\'avant-pied','Poignets qui tournent, pas les épaules','Regard horizontal, dos droit','Rythme régulier, respiration nasale'],
+    progression:'3×1 min → 3×90s → varier avec croisés et doubles sauts.',
+    threshold:null
+  } : {
+    id_a:'a1j', id_b:'b1j',
+    name:'Jumping jacks', exType:'cardio', sets:3, repsTarget:40, restSecs:30,
+    why:'Échauffement cardio complet, zéro préparation. Chauffe tout le corps en 3 min.',
+    technique:['Pieds joints au départ','Sauter en écartant les pieds et levant les bras jusqu\'à les joindre au-dessus','Atterrir en douceur sur l\'avant-pied','Rythme régulier, respiration nasale'],
+    progression:'40 → 50 → 60 reps par série.',
+    threshold:null
+  };
+
+  return {
   A:{type:'A',name:'Full Body Push/Hinge',color:'#3DAA6E',exercises:[
-    {id:'a1',name:'Jumping jacks',exType:'cardio',sets:3,repsTarget:40,restSecs:30,
-     why:'Échauffement cardio complet : cardio, coordination, chauffe les articulations sans impact. Alternative à la corde à sauter.',
-     technique:['Pieds joints au départ','Sauter en écartant les pieds et levant les bras jusqu\'à les joindre au-dessus','Atterrir en douceur sur l\'avant-pied','Rythme régulier, respiration nasale'],
-     progression:'Augmenter à 50 puis 60 reps. Ou revenir à la corde quand tu veux.',
-     threshold:null,altTimer:false},
+    {...cardio, id:cardio.id_a},
     {id:'a2',name:'Squat poids du corps',exType:'reps',sets:3,repsTarget:10,restSecs:60,
-     why:'Renforce quadriceps, fessiers et ischio-jambiers. Mouvement fonctionnel de base.',
-     technique:['Pieds à largeur d\'épaules, légèrement tournés vers l\'extérieur','Descendre jusqu\'aux cuisses parallèles au sol','Genoux dans l\'axe des orteils, ne pas s\'effondrer vers l\'intérieur','Poitrine haute, dos neutre — regarder devant soi'],
-     progression:'3×10 → 3×12 → 3×15 → passer au squat bulgare.',
+     why:'Renforce quadriceps, fessiers et ischio-jambiers. Mouvement fonctionnel de base. Zéro équipement.',
+     technique:['Pieds à largeur d\'épaules, légèrement tournés vers l\'extérieur','Descendre jusqu\'aux cuisses parallèles au sol','Genoux dans l\'axe des orteils — ne pas les laisser tomber vers l\'intérieur','Poitrine haute, dos neutre, regard devant soi'],
+     progression:'3×10 → 3×12 → 3×15 → squat bulgare.',
      threshold:15},
     {id:'a3',name:'Pompes',exType:'reps',sets:3,repsTarget:10,restSecs:60,
-     why:'Développe pectoraux, épaules, triceps et gainage du tronc.',
-     technique:['Corps aligné tête-talons, pas de fesses en l\'air','Mains légèrement + larges que les épaules','Descendre jusqu\'à 2-3 cm du sol','Coudes à 45° du corps — pas à 90°'],
-     progression:'3×10 → 3×12 → 3×15 → pompes avec pause 2s en bas → pompes déclinées.',
+     why:'Pectoraux, épaules, triceps et gainage. L\'exercice push le plus complet au sol.',
+     technique:['Corps aligné tête-talons — pas de fesses en l\'air','Mains légèrement + larges que les épaules','Descendre jusqu\'à 2-3 cm du sol','Coudes à 45° du corps — pas écarté à 90°'],
+     progression:'3×10 → 3×12 → 3×15 → pause 2s en bas → pompes déclinées.',
      threshold:15},
     {id:'a4',name:'Gainage frontal',exType:'timed',sets:3,repsTarget:25,restSecs:45,
-     why:'Renforce le core profond (transverse abdominis), protège le bas du dos.',
-     technique:['Appui avant-bras et orteils','Bassin neutre — ni trop haut, ni tombant','Contracter abdos et fessiers simultanément','Nuque dans l\'axe, regarder le sol'],
-     progression:'25s → 30s → 40s → 50s → 60s → gainage avec levée de jambe alternée.',
+     why:'Core profond (transverse), protège le bas du dos. Base de toute la progression.',
+     technique:['Avant-bras et orteils au sol','Bassin neutre — ni trop haut, ni tombant','Contracter abdos ET fessiers en même temps','Nuque dans l\'axe, regarder le sol'],
+     progression:'25s → 30s → 40s → 50s → 60s → levée de jambe alternée.',
      threshold:50},
     {id:'a5',name:'Hip hinge / Good morning',exType:'reps',sets:3,repsTarget:10,restSecs:60,
-     why:'Renforce la chaîne postérieure : ischio-jambiers, fessiers, érecteurs du rachis.',
-     technique:['Pieds largeur bassin, genoux légèrement fléchis','Charnière à la hanche — pas une flexion du dos','Dos plat tout au long du mouvement','Contracter les fessiers au retour à la verticale'],
+     why:'Chaîne postérieure complète : ischio-jambiers, fessiers, érecteurs du rachis. Debout, rien.',
+     technique:['Pieds largeur bassin, genoux légèrement fléchis','Charnière à la hanche — pas une flexion du dos','Dos plat tout au long du mouvement','Contracter les fessiers en remontant à la verticale'],
      progression:'3×10 → 3×12 → Romanian deadlift avec sac à dos lesté.',
      threshold:15},
     {id:'a6',name:'Pompes diamant',exType:'reps',sets:2,repsTarget:6,restSecs:60,
-     why:'Isole les triceps brachial et la partie médiane des pectoraux.',
-     technique:['Mains proches formant un diamant sous la poitrine','Coudes qui restent proches du corps en descendant','Corps gaîné, même alignement que les pompes classiques','Amplitude complète'],
-     progression:'2×6 → 2×8 → 2×10 → pompes diamant pieds surélevés.',
+     why:'Triceps et partie médiane des pectoraux. Variation immédiate des pompes classiques.',
+     technique:['Mains proches formant un diamant sous la poitrine','Coudes qui restent proches du corps en descendant','Même gainage que les pompes classiques','Amplitude complète'],
+     progression:'2×6 → 2×8 → 2×10 → pieds surélevés.',
      threshold:10}
   ]},
-  B:{type:'B',name:'Full Body Pull/Unilatéral',color:'#4A90D9',exercises:[
-    {id:'b1',name:'Jumping jacks',exType:'cardio',sets:3,repsTarget:40,restSecs:30,
-     why:'Échauffement cardio complet, alternative accessible à la corde à sauter.',
-     technique:['Pieds joints au départ','Sauter en écartant les pieds et levant les bras jusqu\'à les joindre au-dessus','Atterrir en douceur sur l\'avant-pied','Rythme régulier'],
-     progression:'Augmenter à 50 puis 60 reps.',
-     threshold:null,altTimer:false},
+  B:{type:'B',name:'Full Body Pull/Postural',color:'#4A90D9',exercises:[
+    {...cardio, id:cardio.id_b},
     {id:'b2',name:'Squat bulgare',exType:'reps',sets:3,repsTarget:6,restSecs:60,
-     why:'Force unilatérale des jambes, corrige les asymétries gauche/droite, améliore l\'équilibre.',
-     technique:['Pied arrière posé sur chaise ou canapé','Genou avant dans l\'axe du pied — ne pas s\'effondrer vers l\'intérieur','Descendre jusqu\'à cuisse avant parallèle au sol','Tronc légèrement incliné en avant'],
+     why:'Force unilatérale des jambes, corrige les asymétries. Chaise ou canapé à portée.',
+     technique:['Pied arrière posé sur chaise ou canapé','Genou avant dans l\'axe du pied — ne pas laisser tomber vers l\'intérieur','Descendre jusqu\'à cuisse avant parallèle au sol','Tronc légèrement incliné en avant, dos droit'],
      progression:'3×6 → 3×8 → 3×10/jambe → bouteilles d\'eau lestées.',
      threshold:10},
-    {id:'b3',name:'Australiennes',exType:'reps',sets:3,repsTarget:6,restSecs:75,
-     why:'Renforce dorsaux, biceps et rhomboïdes. Préparation aux tractions. Exercice clé du pull.',
-     technique:['Table basse ou barre solide à hauteur de taille','Corps aligné tête-talons, talons au sol','Tirer la poitrine vers la surface en serrant les omoplates','Coudes vers l\'arrière — penser à "écraser une noix entre les omoplates"'],
-     progression:'3×6 → 3×8 → 3×10 → pieds surélevés → tractions.',
-     threshold:10},
+    {id:'b3',name:'W au sol',exType:'reps',sets:3,repsTarget:12,restSecs:60,
+     why:'Renforce les muscles entre les omoplates (rhomboïdes, trapèzes moyens). Corrige la posture. Zéro équipement, allongé sur le ventre.',
+     technique:['Allonge-toi sur le ventre, front vers le sol (ne pas lever le menton)','Décolle le buste et les bras du sol','Forme un W avec tes bras — coudes fléchis, mains à hauteur de la tête','Serre fort les omoplates l\'une vers l\'autre — imagine pincer un stylo entre elles','Tiens 1-2s en haut, redescends lentement'],
+     progression:'3×12 → 3×15 → W lesté avec bouteilles 50cl dans chaque main → bouteilles 1L.',
+     threshold:15},
     {id:'b4',name:'Gainage latéral',exType:'timed',sets:3,repsTarget:15,restSecs:45,
-     why:'Renforce les obliques et les stabilisateurs latéraux du rachis.',
-     technique:['Appui avant-bras et pied du côté','Hanche dans l\'axe — ne pas laisser tomber','Bras libre tendu vers le plafond','Respiration abdominale continue'],
-     progression:'15s → 20s → 25s → 30s → gainage latéral avec levée de jambe.',
+     why:'Obliques et stabilisateurs latéraux du rachis. Complète le gainage frontal.',
+     technique:['Avant-bras et pied du côté au sol','Hanche dans l\'axe — ne pas laisser tomber','Bras libre tendu vers le plafond','Respiration abdominale continue'],
+     progression:'15s → 20s → 25s → 30s → levée de jambe.',
      threshold:30},
     {id:'b5',name:'Pompes déclinées',exType:'reps',sets:3,repsTarget:6,restSecs:60,
-     why:'Cible les deltoïdes antérieurs et la partie supérieure des pectoraux.',
+     why:'Deltoïdes antérieurs et pectoraux supérieurs. Chaise ou canapé à portée.',
      technique:['Pieds posés sur chaise ou canapé','Mains à largeur d\'épaules au sol','Corps aligné, angle 30-45° par rapport au sol','Descendre jusqu\'à front proche du sol'],
      progression:'3×6 → 3×8 → 3×10 → hausser les pieds progressivement.',
      threshold:10},
-    {id:'b6',name:'Jumping jacks (finisher)',exType:'cardio',sets:3,repsTarget:50,restSecs:30,
-     why:'Finit la séance en zone cardio et brûle les dernières réserves glycolytiques.',
-     technique:['Maintenir le rythme même fatigué','Réduire l\'amplitude si nécessaire plutôt que de s\'arrêter','Respirer par le nez le plus longtemps possible','Buste droit'],
-     progression:'50 → 60 → 70 reps. Ou revenir à la corde à sauter.',
-     threshold:null}
+    {id:'b6',name:'Superman',exType:'reps',sets:3,repsTarget:10,restSecs:45,
+     why:'Extension dorsale : renforce toute la chaîne postérieure (dos, fessiers, ischio). Prévient le mal de dos. Allongé sur le ventre, rien.',
+     technique:['Allonge-toi sur le ventre, bras tendus devant toi','Décolle simultanément bras et jambes du sol','Tiens 2-3s en haut — contracter les fessiers et le bas du dos','Redescends lentement','Ne pas forcer sur la nuque — regarder le sol'],
+     progression:'3×10 → 3×12 → 3×15 → Superman avec pause 5s → Superman en "alternant" bras gauche / jambe droite.',
+     threshold:15}
   ]}
-};
+  };
+}
+// Alias statique utilisé dans les endroits non-dynamiques
+let SESSIONS = getSessions();
+
 
 const BADGE_DEFS=[
-  {id:'first',icon:'🌱',label:'Première séance',check:h=>h.length>=1},
-  {id:'five',icon:'⭐',label:'5 séances',check:h=>h.length>=5},
-  {id:'ten',icon:'🌟',label:'10 séances',check:h=>h.length>=10},
-  {id:'twenty',icon:'🏆',label:'20 séances',check:h=>h.length>=20},
-  {id:'bothAB',icon:'⚖️',label:'A & B maîtrisées',check:h=>h.some(x=>x.type==='A')&&h.some(x=>x.type==='B')},
-  {id:'streak2',icon:'🔥',label:'2 sem. consécutives',check:()=>computeStreak()>=2},
-  {id:'streak4',icon:'🔥🔥',label:'1 mois de suite',check:()=>computeStreak()>=4},
-  {id:'fast',icon:'⚡',label:'Séance < 30 min',check:h=>h.some(x=>x.duration>0&&x.duration<30)},
-  {id:'early',icon:'🌅',label:'Lève-tôt',check:h=>h.some(x=>new Date(x.date).getHours()<9)},
+  {id:'first',icon:'🌱',label:'Première séance',desc:'Le voyage de 1000 km commence par un pas.',check:h=>h.length>=1},
+  {id:'five',icon:'⭐',label:'5 séances',desc:'La régularité commence à se construire.',check:h=>h.length>=5},
+  {id:'ten',icon:'🌟',label:'10 séances',desc:'Ton corps commence à vraiment changer.',check:h=>h.length>=10},
+  {id:'twenty',icon:'🏆',label:'20 séances',desc:'Deux mois de discipline. Respect.',check:h=>h.length>=20},
+  {id:'fifty',icon:'💎',label:'50 séances',desc:'Un an de régularité. Niveau élite.',check:h=>h.length>=50},
+  {id:'bothAB',icon:'⚖️',label:'A & B maîtrisées',desc:'Programme complet bouclé.',check:h=>h.some(x=>x.type==='A')&&h.some(x=>x.type==='B')},
+  {id:'streak2',icon:'🔥',label:'2 sem. consécutives',desc:'L\'habitude commence à prendre.',check:()=>computeStreak()>=2},
+  {id:'streak4',icon:'🔥🔥',label:'1 mois de suite',desc:'Un mois sans flancher. Solide.',check:()=>computeStreak()>=4},
+  {id:'streak8',icon:'🔥🔥🔥',label:'2 mois de suite',desc:'La discipline est devenue naturelle.',check:()=>computeStreak()>=8},
+  {id:'fast',icon:'⚡',label:'Séance < 30 min',desc:'Efficacité maximale.',check:h=>h.some(x=>x.duration>0&&x.duration<30)},
+  {id:'early',icon:'🌅',label:'Lève-tôt',desc:'Séance avant 9h — discipline de haut niveau.',check:h=>h.some(x=>new Date(x.date).getHours()<9)},
+  {id:'consistent',icon:'📅',label:'Régulier',desc:'4 semaines avec au moins 2 séances/sem.',check:h=>{
+    const wks={};h.forEach(s=>{const k=getWeekKey(new Date(s.date));wks[k]=(wks[k]||0)+1;});
+    const consistent=Object.values(wks).filter(v=>v>=2).length;return consistent>=4;
+  }},
 ];
 
 const MOTIVE_TRAINING=[
@@ -553,6 +602,13 @@ const MOTIVE_TRAINING=[
   {icon:'🔑',strong:'La régularité prime.',text:'Une séance imparfaite vaut mieux qu\'une séance jamais faite.'},
   {icon:'📈',strong:'Tu progresses.',text:'Même quand tu ne le vois pas encore, ton corps s\'adapte.'},
   {icon:'🧠',strong:'La discipline se muscle.',text:'Chaque séance renforce ta capacité à t\'engager durablement.'},
+  {icon:'🔬',strong:'La science confirme.',text:'73,5 kg + 2x/sem musculation = recomposition possible en 12 semaines.'},
+  {icon:'⚖️',strong:'Déficit calorique naturel.',text:'La musculation augmente ton métabolisme de base. Tu brûles plus au repos.'},
+];
+const MOTIVE_STREAK=[
+  {icon:'🔥',strong:'Ne brise pas la série !',text:'Tu as une séance de streak. Ce soir, tu la gardes.'},
+  {icon:'🔥',strong:'Série en cours !',text:'Chaque séance supplémentaire rend la prochaine plus facile.'},
+  {icon:'🏆',strong:'Ta régularité paie.',text:'Ton streak montre que tu as changé tes habitudes pour de bon.'},
 ];
 const MOTIVE_REST=[
   {icon:'🚶',strong:'Repos actif recommandé.',text:'20 min de marche ce soir aide la récupération musculaire.'},
@@ -571,6 +627,7 @@ const CHECKIN_FEEDBACK={
 // ============================================================
 let state={
   name:'Boris',
+  useCorde:false,
   trainingDays:[1,4],
   history:[],
   earnedBadges:[],
@@ -588,7 +645,7 @@ let selectedExId=null;
 function loadState(){
   // Try v1.3 key first, then migrate from v1.2
   try{
-    const s=localStorage.getItem('bodyflow_v13');
+    const s=localStorage.getItem('bodyflow_v16')||localStorage.getItem('bodyflow_v15')||localStorage.getItem('bodyflow_v13');
     if(s){state={...state,...JSON.parse(s)};return;}
     const old=localStorage.getItem('bodyflow_v12');
     if(old){
@@ -598,8 +655,9 @@ function loadState(){
              notifTime:o.notifTime||'19:00',repsHistory:o.repsHistory||{},name:o.name||'Boris'};
     }
   }catch(e){}
+  SESSIONS=getSessions();
 }
-function saveState(){localStorage.setItem('bodyflow_v13',JSON.stringify(state))}
+function saveState(){localStorage.setItem('bodyflow_v16',JSON.stringify(state))}
 
 // ============================================================
 // NAVIGATION
@@ -696,23 +754,42 @@ function updateToday(){
     setMotive(true);
   }
 
-  document.getElementById('stat-streak').textContent=computeStreak()+'🔥';
+  const curStreak=computeStreak();
+  document.getElementById('stat-streak').textContent=curStreak+'🔥';
   document.getElementById('stat-total').textContent=state.history.length;
+
+  // Streak+perf card
+  const spCard=document.getElementById('streak-perf-card');
+  if(state.history.length>0){
+    spCard.style.display='block';
+    document.getElementById('streak-big').textContent=curStreak+'🔥';
+    document.getElementById('streak-sub').textContent=curStreak>=2?'semaines consécutives — continue !':curStreak===1?'semaine — ne brise pas la série !':'Commence ta série ce soir !';
+    // Last pompes reps
+    const pompeHist=state.repsHistory['a3']||[];
+    if(pompeHist.length){
+      const last=pompeHist[pompeHist.length-1];
+      const avg=last.reps.length?Math.round(last.reps.reduce((a,b)=>a+b,0)/last.reps.length):0;
+      document.getElementById('last-reps-display').textContent=avg||'—';
+    }
+  }else{spCard.style.display='none';}
 
   // Supp card timing
   document.getElementById('supp-title').textContent=h>=18?'Compléments ce soir':'Rappel compléments';
 }
 
 function setMotive(isRest){
-  const pool=isRest?MOTIVE_REST:MOTIVE_TRAINING;
+  const streak=computeStreak();
+  let pool;
+  if(isRest){pool=MOTIVE_REST;}
+  else if(streak>=1&&Math.random()<0.4){pool=MOTIVE_STREAK;}
+  else{pool=MOTIVE_TRAINING;}
   const m=pool[Math.floor(Math.random()*pool.length)];
   const card=document.getElementById('motive-card');
   document.getElementById('motive-icon').textContent=m.icon;
-  document.getElementById('motive-text').innerHTML=`<strong>${m.strong}</strong>${m.text}`;
-  const streak=computeStreak();
+  document.getElementById('motive-text').innerHTML='<strong>'+m.strong+'</strong>'+m.text;
   card.style.background=isRest?'linear-gradient(135deg,#4B5563,#374151)':
-    streak>=3?`linear-gradient(135deg,#E8554E,${darken('#E8554E',25)})`:
-    streak>=1?`linear-gradient(135deg,#F59E0B,${darken('#F59E0B',25)})`:
+    streak>=3?'linear-gradient(135deg,#E8554E,'+darken('#E8554E',25)+')':
+    streak>=1?'linear-gradient(135deg,#F59E0B,'+darken('#F59E0B',25)+')':
     'linear-gradient(135deg,#3DAA6E,#2D7A4F)';
 }
 
@@ -1069,19 +1146,27 @@ function renderRepsGraph(){
 
 function renderWeekGraph(){
   const wb=document.getElementById('week-bars');wb.innerHTML='';
-  const now=new Date();
+  const curWeek=getWeekKey(new Date());
+  const weeks=[];
   for(let i=7;i>=0;i--){
-    const d=new Date(now);d.setDate(now.getDate()-i*7);
-    const key=getWeekKey(d);
+    const base=new Date(curWeek+'T12:00:00');
+    base.setDate(base.getDate()-i*7);
+    weeks.push(getWeekKey(base));
+  }
+  weeks.forEach((key,idx)=>{
     const sA=state.history.filter(h=>getWeekKey(new Date(h.date))===key&&h.type==='A').length;
     const sB=state.history.filter(h=>getWeekKey(new Date(h.date))===key&&h.type==='B').length;
     const total=sA+sB;
-    const pct=Math.min(100,(total/3)*100);
+    const pct=Math.min(100,(total/2)*100);
     const bg=sA>0&&sB>0?'linear-gradient(to top,var(--green),var(--blue))':sA>0?'var(--green)':sB>0?'var(--blue)':'var(--border)';
+    const isCur=key===curWeek;
+    const weeksAgo=7-idx;
+    const label=isCur?'Cur':(weeksAgo===1?'-1':`-${weeksAgo}`);
     const col=document.createElement('div');col.className='week-col';
-    col.innerHTML=`<div class="week-count">${total>0?total:''}</div><div class="week-bar" style="height:${pct||4}%;background:${bg}"></div><div class="week-label">${i===0?'Cur':`-${i}`}</div>`;
+    col.style=isCur?'font-weight:700':'';
+    col.innerHTML='<div class="week-count" style="'+(isCur?'color:var(--green)':'')+'">'+(total>0?total:'')+'</div><div class="week-bar" style="height:'+(pct||4)+'%;background:'+bg+';opacity:'+(isCur?'1':'.7')+'"></div><div class="week-label" style="'+(isCur?'color:var(--green);font-weight:700':'')+'">'+(isCur?'● Cur':label)+'</div>';
     wb.appendChild(col);
-  }
+  });
 }
 
 function renderBadges(){
@@ -1111,6 +1196,7 @@ function renderHistory(){
 // ============================================================
 function loadSettings(){
   document.getElementById('name-input').value=state.name||'';
+  updateCordeUI();
   document.querySelectorAll('.day-toggle').forEach(b=>b.classList.toggle('active',state.trainingDays.includes(parseInt(b.dataset.day))));
   document.getElementById('notif-time').value=state.notifTime||'19:00';
   updateNotifUI();
@@ -1136,6 +1222,19 @@ function updateNotifUI(){
     const perm='Notification'in window?Notification.permission:'denied';
     box.innerHTML=perm==='granted'?`<div style="background:#DCFCE7;color:#166534;border-radius:var(--rs);padding:12px 14px;margin-bottom:10px;font-size:13px;line-height:1.5">✅ Notifications actives à ${state.notifTime}</div>`:`<div style="background:#FEF9C3;color:#854D0E;border-radius:var(--rs);padding:12px 14px;margin-bottom:10px;font-size:13px">⚠️ Permission non accordée — active dans les réglages du navigateur.</div>`;
   }else{sub.textContent='Désactivé';testRow.style.display='none';box.innerHTML='';}
+}
+function toggleCorde(){
+  state.useCorde=!state.useCorde;
+  SESSIONS=getSessions();
+  saveState();
+  updateCordeUI();
+  renderProgramme();
+}
+function updateCordeUI(){
+  const t=document.getElementById('corde-toggle');
+  const s=document.getElementById('corde-sub');
+  if(t) t.classList.toggle('on',state.useCorde);
+  if(s) s.textContent=state.useCorde?'Corde à sauter (actif)':'Jumping jacks (actif)';
 }
 function toggleNotif(){
   if(!('Notification'in window)){alert('Notifications non supportées sur ce navigateur.');return;}
