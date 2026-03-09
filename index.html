@@ -417,19 +417,6 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     </div>
   </div>
   <div class="settings-section">
-    <div class="settings-title">Échauffement</div>
-    <div class="settings-row" onclick="toggleCorde()">
-      <div class="s-left">
-        <div class="s-icon" style="background:#ECFDF5">🪢</div>
-        <div>
-          <div class="s-label">Corde à sauter</div>
-          <div class="s-sub" id="corde-sub">Jumping jacks (actif)</div>
-        </div>
-      </div>
-      <div class="toggle" id="corde-toggle"></div>
-    </div>
-  </div>
-  <div class="settings-section">
     <div class="settings-title">Export & données</div>
     <div class="settings-row" onclick="exportICS()"><div class="s-left"><div class="s-icon" style="background:#ECFDF5">📅</div><div><div class="s-label">Exporter .ics</div><div class="s-sub">Importer dans Google Agenda</div></div></div><span class="s-arrow">↓</span></div>
     <div class="settings-row" onclick="exportData()"><div class="s-left"><div class="s-icon" style="background:#EFF6FF">💾</div><div><div class="s-label">Sauvegarder mes données</div><div class="s-sub">Export JSON de l'historique</div></div></div><span class="s-arrow">↓</span></div>
@@ -497,85 +484,153 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 // Pour reps : sets × target. Progression par +2 reps toutes les 2 séances.
 // Pour timed : sets × seconds. Progression par +5s tous les 2 cycles.
 // threshold = seuil déclencheur "prêt à progresser"
-// getSessions() lit state.useCorde pour switcher l'échauffement
-function getSessions(){
-  const cardio = state.useCorde ? {
-    id_a:'a1c', id_b:'b1c',
-    name:'Corde à sauter', exType:'cardio', sets:3, repsTarget:60, restSecs:30,
-    why:'Échauffement cardio intense, améliore la coordination et l\'endurance.',
-    technique:['Sauts légers sur l\'avant-pied','Poignets qui tournent, pas les épaules','Regard horizontal, dos droit','Rythme régulier, respiration nasale'],
-    progression:'3×1 min → 3×90s → varier avec croisés et doubles sauts.',
-    threshold:null
-  } : {
-    id_a:'a1j', id_b:'b1j',
-    name:'Jumping jacks', exType:'cardio', sets:3, repsTarget:40, restSecs:30,
-    why:'Échauffement cardio complet, zéro préparation. Chauffe tout le corps en 3 min.',
-    technique:['Pieds joints au départ','Sauter en écartant les pieds et levant les bras jusqu\'à les joindre au-dessus','Atterrir en douceur sur l\'avant-pied','Rythme régulier, respiration nasale'],
-    progression:'40 → 50 → 60 reps par série.',
-    threshold:null
-  };
-
-  return {
+const SESSIONS = {
   A:{type:'A',name:'Full Body Push/Hinge',color:'#3DAA6E',exercises:[
-    {...cardio, id:cardio.id_a},
+    {id:'a1',name:'Jumping jacks',exType:'cardio',sets:3,repsTarget:40,restSecs:30,
+     why:'Échauffement cardio complet en 3 min, zéro équipement, zéro préparation. Active la circulation, chauffe les articulations des chevilles aux épaules, et monte la fréquence cardiaque progressivement avant l\'effort musculaire. Idéal pour préparer le corps sans risque.',
+     technique:[
+       'Pieds joints, bras le long du corps — position de départ neutre',
+       'Sauter en écartant les pieds (légèrement + larges que les épaules) PENDANT que tu lèves les bras pour les joindre au-dessus de la tête',
+       'Atterrir en douceur sur l\'avant-pied, jamais talons en premier (protection genoux/chevilles)',
+       'Rythme régulier et contrôlé — pas le plus vite possible, cherche la constance',
+       'Respiration nasale si possible : inspire 2 temps, expire 2 temps'
+     ],
+     progression:'3×40 → 3×50 → 3×60. Alternative : remplace par 3×1 min de corde à sauter si tu veux + d\'intensité.',
+     threshold:null},
     {id:'a2',name:'Squat poids du corps',exType:'reps',sets:3,repsTarget:10,restSecs:60,
-     why:'Renforce quadriceps, fessiers et ischio-jambiers. Mouvement fonctionnel de base. Zéro équipement.',
-     technique:['Pieds à largeur d\'épaules, légèrement tournés vers l\'extérieur','Descendre jusqu\'aux cuisses parallèles au sol','Genoux dans l\'axe des orteils — ne pas les laisser tomber vers l\'intérieur','Poitrine haute, dos neutre, regard devant soi'],
-     progression:'3×10 → 3×12 → 3×15 → squat bulgare.',
+     why:'Le mouvement fonctionnel le plus important : s\'asseoir et se lever. Renforce quadriceps, fessiers, ischio-jambiers et mollets en une seule répétition. Améliore la mobilité de hanche et la stabilité des genoux. Base de tout programme de force.',
+     technique:[
+       'Pieds à largeur d\'épaules, orteils légèrement tournés vers l\'extérieur (15-30°)',
+       'Bras tendus devant toi pour l\'équilibre, regard fixé sur un point devant — ne pas regarder le sol',
+       'Initie le mouvement en poussant les hanches vers l\'arrière (comme pour s\'asseoir sur une chaise loin derrière toi)',
+       'Descendre jusqu\'à ce que les cuisses soient parallèles au sol — si difficile, descends aussi bas que tu peux sans douleur',
+       'Genoux dans l\'axe des orteils tout au long — s\'ils tombent vers l\'intérieur, ralentis et contracte les fessiers',
+       'Remonter en poussant dans les talons, expirer en montant'
+     ],
+     progression:'3×10 → 3×12 → 3×15 → squat bulgare (pied arrière sur chaise).',
      threshold:15},
     {id:'a3',name:'Pompes',exType:'reps',sets:3,repsTarget:10,restSecs:60,
-     why:'Pectoraux, épaules, triceps et gainage. L\'exercice push le plus complet au sol.',
-     technique:['Corps aligné tête-talons — pas de fesses en l\'air','Mains légèrement + larges que les épaules','Descendre jusqu\'à 2-3 cm du sol','Coudes à 45° du corps — pas écarté à 90°'],
-     progression:'3×10 → 3×12 → 3×15 → pause 2s en bas → pompes déclinées.',
+     why:'L\'exercice push le plus complet au sol. Développe les pectoraux, les deltoïdes antérieurs, les triceps et sollicite fortement le gainage du tronc. Un seul exercice qui travaille push + core simultanément. Tes pompes actuelles (18/15/10) montrent déjà un bon niveau de départ.',
+     technique:[
+       'Position de départ : corps parfaitement aligné tête-talons, comme une planche. Fesses ni trop hautes (fuite) ni tombantes (cambrure)',
+       'Mains légèrement + larges que les épaules, doigts pointés vers l\'avant ou légèrement vers l\'extérieur',
+       'Coudes à 45° du corps en descendant — l\'erreur classique est de les écarter à 90° (risque épaules)',
+       'Descendre jusqu\'à 2-3 cm du sol — poitrine qui frôle sans toucher',
+       'Pousser le sol pour remonter, expirer en montant. Ne pas verrouiller les coudes en haut',
+       'Si trop difficile : pompes sur les genoux en gardant l\'alignement bassin-épaules'
+     ],
+     progression:'3×10 → 3×12 → 3×15 → pause 2s en bas → pompes déclinées (pieds surélevés).',
      threshold:15},
     {id:'a4',name:'Gainage frontal',exType:'timed',sets:3,repsTarget:25,restSecs:45,
-     why:'Core profond (transverse), protège le bas du dos. Base de toute la progression.',
-     technique:['Avant-bras et orteils au sol','Bassin neutre — ni trop haut, ni tombant','Contracter abdos ET fessiers en même temps','Nuque dans l\'axe, regarder le sol'],
-     progression:'25s → 30s → 40s → 50s → 60s → levée de jambe alternée.',
+     why:'Renforce le transverse de l\'abdomen — le muscle profond qui "ceinture" le tronc et protège le bas du dos. Contrairement aux crunchs, le gainage ne comprime pas les vertèbres. C\'est la base de toute stabilité pour les autres exercices.',
+     technique:[
+       'Avant-bras au sol, coudes sous les épaules. Orteils au sol, corps soulevé',
+       'Bassin neutre : ni trop haut (fesses en l\'air = tricherie), ni tombant (cambrure = douleur dos)',
+       'Contracter SIMULTANÉMENT abdominaux + fessiers — c\'est la combinaison qui protège le dos',
+       'Nuque dans l\'axe de la colonne : regarder le sol à 30 cm devant toi, pas entre tes mains',
+       'Respirer normalement — si tu retiens ton souffle, le gainage ne dure pas',
+       'Si ça tremble après 15s, c\'est normal et bénéfique — tiens jusqu\'au bout'
+     ],
+     progression:'25s → 30s → 40s → 50s → 60s → gainage avec levée de jambe alternée 3s.',
      threshold:50},
-    {id:'a5',name:'Hip hinge / Good morning',exType:'reps',sets:3,repsTarget:10,restSecs:60,
-     why:'Chaîne postérieure complète : ischio-jambiers, fessiers, érecteurs du rachis. Debout, rien.',
-     technique:['Pieds largeur bassin, genoux légèrement fléchis','Charnière à la hanche — pas une flexion du dos','Dos plat tout au long du mouvement','Contracter les fessiers en remontant à la verticale'],
-     progression:'3×10 → 3×12 → Romanian deadlift avec sac à dos lesté.',
+    {id:'a5',name:'Hip hinge',exType:'reps',sets:3,repsTarget:10,restSecs:60,
+     why:'Renforce toute la chaîne postérieure : ischio-jambiers, fessiers et érecteurs du rachis. Apprentissage du mouvement de charnière à la hanche — fondamental pour prévenir les blessures de dos dans la vie quotidienne (ramasser un objet, se pencher). Préparation au soulevé de terre.',
+     technique:[
+       'Debout, pieds à largeur de bassin, genoux légèrement fléchis (pas raides, pas profondément pliés)',
+       'Bras tendus devant toi ou mains derrière la nuque (+ difficile)',
+       'Initier le mouvement en poussant les hanches VERS L\'ARRIÈRE — c\'est une charnière à la hanche, pas une flexion du dos',
+       'Le dos reste PLAT tout au long — si tu sens ton dos arrondir, tu vas trop loin',
+       'Descendre jusqu\'à sentir l\'étirement dans les ischio-jambiers (l\'arrière des cuisses)',
+       'Contracter les fessiers pour revenir à la verticale, expirer en remontant'
+     ],
+     progression:'3×10 → 3×12 → avec bouteilles d\'eau lestées → sac à dos chargé (Romanian deadlift).',
      threshold:15},
     {id:'a6',name:'Pompes diamant',exType:'reps',sets:2,repsTarget:6,restSecs:60,
-     why:'Triceps et partie médiane des pectoraux. Variation immédiate des pompes classiques.',
-     technique:['Mains proches formant un diamant sous la poitrine','Coudes qui restent proches du corps en descendant','Même gainage que les pompes classiques','Amplitude complète'],
-     progression:'2×6 → 2×8 → 2×10 → pieds surélevés.',
+     why:'Variation des pompes qui isole spécifiquement les triceps (arrière des bras) et la partie sternale des pectoraux. La proximité des mains augmente la difficulté et le recrutement des triceps. Exercice finisher idéal après les pompes classiques.',
+     technique:[
+       'Même position que les pompes classiques — alignement tête-talons impeccable',
+       'Rapprocher les mains sous la poitrine de façon à former un triangle (ou diamant) avec les pouces et index',
+       'Les coudes doivent rester proches du corps tout au long de la descente — c\'est ce qui isole les triceps',
+       'Descendre jusqu\'à la poitrine qui frôle le triangle de mains',
+       'Si trop difficile, rapprocher légèrement les mains sans aller jusqu\'au diamant parfait'
+     ],
+     progression:'2×6 → 2×8 → 2×10 → pieds surélevés sur chaise.',
      threshold:10}
   ]},
   B:{type:'B',name:'Full Body Pull/Postural',color:'#4A90D9',exercises:[
-    {...cardio, id:cardio.id_b},
+    {id:'b1',name:'Jumping jacks',exType:'cardio',sets:3,repsTarget:40,restSecs:30,
+     why:'Même logique que la séance A : activation cardio complète en 3 min sans préparation. Chauffe les épaules et les hanches qui vont être sollicitées dans les exercices de tirage et unilatéraux qui suivent.',
+     technique:[
+       'Pieds joints, bras le long du corps — position de départ neutre',
+       'Sauter en écartant les pieds pendant que tu lèves les bras pour les joindre au-dessus de la tête',
+       'Atterrir en douceur sur l\'avant-pied — protection des genoux et chevilles',
+       'Rythme régulier, respiration contrôlée : 2 temps inspire, 2 temps expire',
+       'Garde le buste droit — ne pas se pencher en avant quand la fatigue arrive'
+     ],
+     progression:'3×40 → 3×50 → 3×60. Alternative : 3×1 min de corde à sauter.',
+     threshold:null},
     {id:'b2',name:'Squat bulgare',exType:'reps',sets:3,repsTarget:6,restSecs:60,
-     why:'Force unilatérale des jambes, corrige les asymétries. Chaise ou canapé à portée.',
-     technique:['Pied arrière posé sur chaise ou canapé','Genou avant dans l\'axe du pied — ne pas laisser tomber vers l\'intérieur','Descendre jusqu\'à cuisse avant parallèle au sol','Tronc légèrement incliné en avant, dos droit'],
-     progression:'3×6 → 3×8 → 3×10/jambe → bouteilles d\'eau lestées.',
+     why:'Version unilatérale du squat — chaque jambe travaille indépendamment. Corrige les asymétries de force entre jambes gauche et droite. Développe la stabilité de hanche et l\'équilibre. Plus difficile que le squat classique à charge égale : 6 reps par jambe suffisent pour débuter.',
+     technique:[
+       'Debout à environ 60-70 cm d\'une chaise ou canapé, dos tourné vers celui-ci',
+       'Poser le dessus du pied arrière sur la chaise — la jambe avant est la jambe de travail',
+       'La jambe avant doit être assez loin pour que le genou ne dépasse pas les orteils en bas',
+       'Descendre en fléchissant la jambe avant jusqu\'à la cuisse parallèle au sol',
+       'Genou avant dans l\'axe du pied — s\'il part vers l\'intérieur, contracte le fessier',
+       'Remonter en poussant dans le talon avant. Faire toutes les reps d\'un côté, puis changer'
+     ],
+     progression:'3×6 → 3×8 → 3×10/jambe → bouteilles d\'eau lestées dans chaque main.',
      threshold:10},
     {id:'b3',name:'W au sol',exType:'reps',sets:3,repsTarget:12,restSecs:60,
-     why:'Renforce les muscles entre les omoplates (rhomboïdes, trapèzes moyens). Corrige la posture. Zéro équipement, allongé sur le ventre.',
-     technique:['Allonge-toi sur le ventre, front vers le sol (ne pas lever le menton)','Décolle le buste et les bras du sol','Forme un W avec tes bras — coudes fléchis, mains à hauteur de la tête','Serre fort les omoplates l\'une vers l\'autre — imagine pincer un stylo entre elles','Tiens 1-2s en haut, redescends lentement'],
-     progression:'3×12 → 3×15 → W lesté avec bouteilles 50cl dans chaque main → bouteilles 1L.',
+     why:'Renforce les rhomboïdes et les trapèzes moyens — les muscles entre et sous les omoplates. Ces muscles sont chroniquement sous-sollicités dans la vie moderne (travail sur écran, position assise). Les renforcer corrige la posture voûtée et prévient les douleurs cervicales et dorsales. Complément indispensable aux pompes pour équilibrer le dos.',
+     technique:[
+       'Allonge-toi sur le ventre, front posé vers le sol (ne pas lever le menton — risque nuque)',
+       'Bras en position "en l\'air" comme si tu te rendais, coudes à 90°',
+       'Décolle le buste et les bras du sol — le nombril reste au sol',
+       'Ramène les coudes vers les côtes en formant un W — imagine que tu veux écraser un stylo entre tes deux omoplates',
+       'Tiens 2 secondes en haut en serrant fort les omoplates, puis redescends lentement',
+       'Ne cherche pas à monter haut — cherche à serrer fort. L\'amplitude est faible, l\'intensité musculaire est élevée'
+     ],
+     progression:'3×12 → 3×15 → W lesté : bouteille 50cl dans chaque main → bouteille 1L.',
      threshold:15},
     {id:'b4',name:'Gainage latéral',exType:'timed',sets:3,repsTarget:15,restSecs:45,
-     why:'Obliques et stabilisateurs latéraux du rachis. Complète le gainage frontal.',
-     technique:['Avant-bras et pied du côté au sol','Hanche dans l\'axe — ne pas laisser tomber','Bras libre tendu vers le plafond','Respiration abdominale continue'],
-     progression:'15s → 20s → 25s → 30s → levée de jambe.',
+     why:'Renforce les obliques et les muscles stabilisateurs latéraux du rachis. Ces muscles maintiennent le bassin horizontal quand tu marches ou cours. Complément direct au gainage frontal pour une ceinture abdominale complète.',
+     technique:[
+       'Position de départ : allongé sur le côté, avant-bras au sol, coude sous l\'épaule',
+       'Soulever le bassin pour créer une ligne droite de la tête aux pieds',
+       'Hanche dans l\'axe — le plus grand défaut est de laisser tomber la hanche vers le sol',
+       'Bras libre tendu vers le plafond pour l\'équilibre et l\'ouverture thoracique',
+       'Ne pas chercher à tenir le ventre rentré — contracter les obliques en imaginant "comprimer" les côtes vers le bassin',
+       'Recommencer de l\'autre côté. Chaque côté compte comme une série'
+     ],
+     progression:'15s → 20s → 25s → 30s → levée de jambe pendant le gainage.',
      threshold:30},
     {id:'b5',name:'Pompes déclinées',exType:'reps',sets:3,repsTarget:6,restSecs:60,
-     why:'Deltoïdes antérieurs et pectoraux supérieurs. Chaise ou canapé à portée.',
-     technique:['Pieds posés sur chaise ou canapé','Mains à largeur d\'épaules au sol','Corps aligné, angle 30-45° par rapport au sol','Descendre jusqu\'à front proche du sol'],
-     progression:'3×6 → 3×8 → 3×10 → hausser les pieds progressivement.',
+     why:'Variante des pompes qui incline le corps (pieds plus hauts que les mains) pour cibler spécifiquement les deltoïdes antérieurs (épaules avant) et la partie claviculaire des pectoraux. Progression naturelle vers les pompes sur épaule et le handstand push-up.',
+     technique:[
+       'Placer les pieds sur une chaise ou canapé, mains au sol à largeur d\'épaules',
+       'Corps aligné de la tête aux hanches — angle d\'environ 30-45° par rapport au sol',
+       'Descendre jusqu\'à ce que le front soit proche du sol (amplitude plus grande qu\'une pompe classique)',
+       'Coudes à 45° du corps — même règle que les pompes classiques',
+       'Pousser pour remonter, expirer en poussant',
+       'Plus les pieds sont hauts, plus l\'exercice est difficile et cible les épaules'
+     ],
+     progression:'3×6 → 3×8 → 3×10 → pieds plus hauts (tabouret, puis mur).',
      threshold:10},
     {id:'b6',name:'Superman',exType:'reps',sets:3,repsTarget:10,restSecs:45,
-     why:'Extension dorsale : renforce toute la chaîne postérieure (dos, fessiers, ischio). Prévient le mal de dos. Allongé sur le ventre, rien.',
-     technique:['Allonge-toi sur le ventre, bras tendus devant toi','Décolle simultanément bras et jambes du sol','Tiens 2-3s en haut — contracter les fessiers et le bas du dos','Redescends lentement','Ne pas forcer sur la nuque — regarder le sol'],
-     progression:'3×10 → 3×12 → 3×15 → Superman avec pause 5s → Superman en "alternant" bras gauche / jambe droite.',
+     why:'Extension dorsale complète qui renforce toute la chaîne postérieure : érecteurs du rachis, fessiers et ischio-jambiers simultanément. Prévient activement le mal de dos. Exercice allongé sur le ventre — enchaîne naturellement avec le W au sol sans changer de position.',
+     technique:[
+       'Allonge-toi sur le ventre, bras tendus devant toi, jambes tendues derrière',
+       'Décolle SIMULTANÉMENT les bras et les jambes du sol — le nombril reste au sol',
+       'Tiens 2-3 secondes en position haute en contractant fessiers et bas du dos',
+       'Ne pas forcer sur la nuque pour monter plus haut — regarder le sol, la tête dans l\'axe de la colonne',
+       'Redescends lentement et contrôlé — ne pas tomber',
+       'Respirer : inspire avant de monter, expire en tenant la position haute'
+     ],
+     progression:'3×10 → 3×12 → 3×15 → tiens 5s en haut → Superman alterné (bras gauche + jambe droite, puis inverse).',
      threshold:15}
   ]}
-  };
-}
-// Alias statique utilisé dans les endroits non-dynamiques
-let SESSIONS = getSessions();
+};
 
 
 const BADGE_DEFS=[
@@ -627,7 +682,6 @@ const CHECKIN_FEEDBACK={
 // ============================================================
 let state={
   name:'Boris',
-  useCorde:false,
   trainingDays:[1,4],
   history:[],
   earnedBadges:[],
@@ -655,7 +709,6 @@ function loadState(){
              notifTime:o.notifTime||'19:00',repsHistory:o.repsHistory||{},name:o.name||'Boris'};
     }
   }catch(e){}
-  SESSIONS=getSessions();
 }
 function saveState(){localStorage.setItem('bodyflow_v16',JSON.stringify(state))}
 
@@ -1196,7 +1249,6 @@ function renderHistory(){
 // ============================================================
 function loadSettings(){
   document.getElementById('name-input').value=state.name||'';
-  updateCordeUI();
   document.querySelectorAll('.day-toggle').forEach(b=>b.classList.toggle('active',state.trainingDays.includes(parseInt(b.dataset.day))));
   document.getElementById('notif-time').value=state.notifTime||'19:00';
   updateNotifUI();
@@ -1222,19 +1274,6 @@ function updateNotifUI(){
     const perm='Notification'in window?Notification.permission:'denied';
     box.innerHTML=perm==='granted'?`<div style="background:#DCFCE7;color:#166534;border-radius:var(--rs);padding:12px 14px;margin-bottom:10px;font-size:13px;line-height:1.5">✅ Notifications actives à ${state.notifTime}</div>`:`<div style="background:#FEF9C3;color:#854D0E;border-radius:var(--rs);padding:12px 14px;margin-bottom:10px;font-size:13px">⚠️ Permission non accordée — active dans les réglages du navigateur.</div>`;
   }else{sub.textContent='Désactivé';testRow.style.display='none';box.innerHTML='';}
-}
-function toggleCorde(){
-  state.useCorde=!state.useCorde;
-  SESSIONS=getSessions();
-  saveState();
-  updateCordeUI();
-  renderProgramme();
-}
-function updateCordeUI(){
-  const t=document.getElementById('corde-toggle');
-  const s=document.getElementById('corde-sub');
-  if(t) t.classList.toggle('on',state.useCorde);
-  if(s) s.textContent=state.useCorde?'Corde à sauter (actif)':'Jumping jacks (actif)';
 }
 function toggleNotif(){
   if(!('Notification'in window)){alert('Notifications non supportées sur ce navigateur.');return;}
