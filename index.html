@@ -310,6 +310,29 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     <div class="stat-card"><div class="stat-num" id="stat-total" style="color:var(--blue)">0</div><div class="stat-label">Séances au total</div></div>
   </div>
 
+  <!-- XP / Level card -->
+  <div class="card" id="xp-card" style="padding:16px 20px;margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div>
+        <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em">Niveau</div>
+        <div style="font-family:'Fraunces',serif;font-size:26px;font-weight:900" id="xp-level-num">1</div>
+        <div style="font-size:12px;color:var(--muted)" id="xp-level-title">Débutant 🌱</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em">XP Total</div>
+        <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;color:var(--blue)" id="xp-total">0</div>
+        <div style="font-size:12px;color:var(--muted)" id="xp-mult">×1.0 (pas de streak)</div>
+      </div>
+    </div>
+    <div style="background:var(--border);border-radius:50px;height:8px;overflow:hidden">
+      <div id="xp-bar" style="background:linear-gradient(90deg,var(--blue),var(--purple));height:100%;border-radius:50px;width:0%;transition:width .6s ease"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px">
+      <span id="xp-progress-text">0 / 0 XP</span>
+      <span id="xp-next-level">Niveau 2</span>
+    </div>
+  </div>
+
   <!-- Streak + last perf card -->
   <div class="card" id="streak-perf-card" style="display:none;padding:16px 20px">
     <div style="display:flex;justify-content:space-between;align-items:center">
@@ -351,6 +374,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 <!-- SUIVI -->
 <div id="screen-suivi" class="screen">
   <div class="screen-header">Suivi 📊</div>
+  <div id="challenge-section"></div>
   <div class="stats-row">
     <div class="stat-card"><div class="stat-num" id="suivi-streak" style="color:var(--coral)">0🔥</div><div class="stat-label">Streak semaines</div></div>
     <div class="stat-card"><div class="stat-num" id="suivi-total" style="color:var(--blue)">0</div><div class="stat-label">Total séances</div></div>
@@ -422,7 +446,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     <div class="settings-row" onclick="exportData()"><div class="s-left"><div class="s-icon" style="background:#EFF6FF">💾</div><div><div class="s-label">Sauvegarder mes données</div><div class="s-sub">Export JSON de l'historique</div></div></div><span class="s-arrow">↓</span></div>
     <div class="settings-row" onclick="resetData()"><div class="s-left"><div class="s-icon" style="background:#FEF2F2">🗑️</div><div><div class="s-label">Réinitialiser</div><div class="s-sub">Effacer tout l'historique</div></div></div><span class="s-arrow">→</span></div>
   </div>
-  <div style="text-align:center;color:var(--muted);font-size:12px;padding:20px 0">BodyFlow v1.7 · Pour Boris 💪</div>
+  <div style="text-align:center;color:var(--muted);font-size:12px;padding:20px 0">BodyFlow v1.8 · Pour Boris 💪</div>
 </div>
 
 <!-- NAV -->
@@ -688,7 +712,10 @@ let state={
   notifications:false,
   notifTime:'19:00',
   checkins:{},
-  repsHistory:{} // exId -> [{date, reps:[]}]
+  repsHistory:{}, // exId -> [{date, reps:[]}]
+  xp:0,
+  level:1,
+  challenge:null // {startDate, rewardText, stakeText, sessionsRequired, sessionsWeek, weeklyTarget, completed, failed}
 };
 
 let ws={active:false,type:'A',startTime:null,completed:[],woTimer:null};
@@ -699,7 +726,7 @@ let selectedExId=null;
 function loadState(){
   // Try v1.3 key first, then migrate from v1.2
   try{
-    const s=localStorage.getItem('bodyflow_v17')||localStorage.getItem('bodyflow_v16')||localStorage.getItem('bodyflow_v15')||localStorage.getItem('bodyflow_v13');
+    const s=localStorage.getItem('bodyflow_v18')||localStorage.getItem('bodyflow_v17')||localStorage.getItem('bodyflow_v16')||localStorage.getItem('bodyflow_v15');
     if(s){state={...state,...JSON.parse(s)};return;}
     const old=localStorage.getItem('bodyflow_v12');
     if(old){
@@ -710,7 +737,7 @@ function loadState(){
     }
   }catch(e){}
 }
-function saveState(){localStorage.setItem('bodyflow_v17',JSON.stringify(state))}
+function saveState(){localStorage.setItem('bodyflow_v18',JSON.stringify(state))}
 
 // ============================================================
 // NAVIGATION
@@ -721,7 +748,7 @@ function showScreen(name,btn){
   document.querySelectorAll('.ni').forEach(b=>b.classList.remove('active'));
   if(btn)btn.classList.add('active');
   if(name==='today')updateToday();
-  if(name==='suivi')updateSuivi();
+  if(name==='suivi'){updateSuivi();renderChallenge();}
   if(name==='settings')loadSettings();
 }
 
@@ -810,6 +837,7 @@ function updateToday(){
   const curStreak=computeStreak();
   document.getElementById('stat-streak').textContent=curStreak+'🔥';
   document.getElementById('stat-total').textContent=state.history.length;
+  updateXpCard();
 
   // Streak+perf card
   const spCard=document.getElementById('streak-perf-card');
@@ -1057,6 +1085,274 @@ function clearWorkout(){
   document.getElementById('workout-overlay').classList.remove('active');
 }
 
+
+// ============================================================
+// XP / LEVEL ENGINE
+// ============================================================
+const MAX_LEVEL = 100;
+
+function xpForLevel(n){
+  // Exponential curve: level 100 ≈ 50000 XP with streaks/bonuses
+  return Math.round(500 * Math.pow(n / 100, 1.8));
+}
+
+function totalXpForLevel(n){
+  let total = 0;
+  for(let i = 1; i < n; i++) total += xpForLevel(i);
+  return total;
+}
+
+// Precompute cumulative XP thresholds for all levels
+const XP_THRESHOLDS = [0]; // index = level, value = cumulative XP needed
+for(let i = 1; i <= MAX_LEVEL; i++) XP_THRESHOLDS.push(XP_THRESHOLDS[i-1] + xpForLevel(i));
+
+function getLevelFromXp(xp){
+  for(let i = MAX_LEVEL; i >= 1; i--){
+    if(xp >= XP_THRESHOLDS[i]) return Math.min(i + 1, MAX_LEVEL);
+  }
+  return 1;
+}
+
+function xpProgress(xp){
+  const lvl = getLevelFromXp(xp);
+  if(lvl >= MAX_LEVEL) return {level: MAX_LEVEL, pct: 100, current: 0, needed: 0};
+  const base = XP_THRESHOLDS[lvl - 1];
+  const next = XP_THRESHOLDS[lvl];
+  const current = xp - base;
+  const needed = next - base;
+  return {level: lvl, pct: Math.round((current / needed) * 100), current, needed};
+}
+
+const LEVEL_TITLES = [
+  '', // index 0 unused
+  ...Array(9).fill('Débutant 🌱'),    // 1-9
+  ...Array(10).fill('Régulier ⚡'),   // 10-19
+  ...Array(10).fill('Engagé 🔥'),     // 20-29
+  ...Array(10).fill('Solide 💪'),     // 30-39
+  ...Array(10).fill('Athlète 🎯'),    // 40-49
+  ...Array(10).fill('Warrior 🏆'),    // 50-59
+  ...Array(10).fill('Vétéran 🛡️'),   // 60-69
+  ...Array(10).fill('Elite ⭐'),      // 70-79
+  ...Array(10).fill('Maître 👑'),     // 80-89
+  ...Array(10).fill('Légende 💎'),    // 90-99
+  'BodyFlow Master 🔱'                // 100
+];
+
+const LEVEL_BONUSES = {10: 500, 25: 1000, 50: 2500, 75: 3000};
+
+function getXpMultiplier(){
+  const streak = computeStreak();
+  if(streak >= 4) return 2.0;
+  if(streak >= 3) return 1.5;
+  if(streak >= 2) return 1.2;
+  return 1.0;
+}
+
+function awardXp(baseAmount, reason){
+  const mult = getXpMultiplier();
+  const earned = Math.round(baseAmount * mult);
+  const oldXp = state.xp;
+  const oldLevel = getLevelFromXp(oldXp);
+  state.xp = Math.max(0, state.xp + earned);
+  const newLevel = getLevelFromXp(state.xp);
+
+  // Level-up bonus
+  let bonusXp = 0;
+  for(let lvl = oldLevel + 1; lvl <= newLevel; lvl++){
+    if(LEVEL_BONUSES[lvl]){
+      bonusXp += LEVEL_BONUSES[lvl];
+    }
+  }
+  if(bonusXp > 0){
+    state.xp += bonusXp;
+  }
+  state.level = getLevelFromXp(state.xp);
+  return {earned, mult, bonusXp, oldLevel, newLevel: state.level, levelUp: state.level > oldLevel};
+}
+
+function penalizeXp(amount){
+  const prog = xpProgress(state.xp);
+  // Never drop below current level floor
+  const floor = XP_THRESHOLDS[prog.level - 1];
+  state.xp = Math.max(floor, state.xp - amount);
+  state.level = getLevelFromXp(state.xp);
+}
+
+// ============================================================
+// CHALLENGE ENGINE
+// ============================================================
+function startChallenge(rewardText, stakeText){
+  if(state.challenge && !state.challenge.completed && !state.challenge.failed){
+    alert('Un challenge est déjà en cours !');
+    return;
+  }
+  state.challenge = {
+    startDate: new Date().toISOString(),
+    rewardText,
+    stakeText,
+    weeklyTarget: 3, // 3 séances/semaine
+    weeks: 4,        // 4 semaines = 30j
+    progress: [],    // [{weekKey, count}]
+    completed: false,
+    failed: false
+  };
+  saveState();
+  renderChallenge();
+  showToast('Challenge 30j lancé ! 🚀 Bonne chance Boris !');
+}
+
+function getChallengeWeekProgress(){
+  if(!state.challenge) return null;
+  const start = new Date(state.challenge.startDate);
+  const now = new Date();
+  const msPerWeek = 7 * 24 * 3600 * 1000;
+  const weeks = [];
+  for(let w = 0; w < state.challenge.weeks; w++){
+    const weekStart = new Date(start.getTime() + w * msPerWeek);
+    const weekEnd = new Date(weekStart.getTime() + msPerWeek);
+    const key = getWeekKey(weekStart);
+    const sessions = state.history.filter(h => {
+      const d = new Date(h.date);
+      return d >= weekStart && d < weekEnd && !h.partial;
+    }).length;
+    const isPast = weekEnd < now;
+    const isCurrent = weekStart <= now && now < weekEnd;
+    weeks.push({w: w+1, key, sessions, target: state.challenge.weeklyTarget, isPast, isCurrent});
+  }
+  return weeks;
+}
+
+function checkChallenge(){
+  if(!state.challenge || state.challenge.completed || state.challenge.failed) return;
+  const weeks = getChallengeWeekProgress();
+  if(!weeks) return;
+  const now = new Date();
+  const start = new Date(state.challenge.startDate);
+  const end = new Date(start.getTime() + state.challenge.weeks * 7 * 24 * 3600 * 1000);
+
+  // Check failed weeks (past weeks with < target)
+  const failedWeeks = weeks.filter(w => w.isPast && w.sessions < w.target);
+  if(failedWeeks.length > 0){
+    state.challenge.failed = true;
+    penalizeXp(200);
+    saveState();
+    showChallengeResult(false);
+    return;
+  }
+
+  // Check if all weeks done successfully
+  if(now >= end){
+    const allPassed = weeks.every(w => w.sessions >= w.target);
+    if(allPassed){
+      state.challenge.completed = true;
+      awardXp(500, 'Challenge 30j réussi !');
+      saveState();
+      showChallengeResult(true);
+    }
+  }
+}
+
+function showChallengeResult(success){
+  const msg = success
+    ? '🏆 Challenge réussi ! +500 XP bonus !\nTu mérites ta récompense : ' + state.challenge.rewardText
+    : '😔 Challenge échoué. -200 XP.\nN\'oublie pas ton engagement : ' + state.challenge.stakeText;
+  alert(msg);
+  renderChallenge();
+}
+
+function renderChallenge(){
+  const el = document.getElementById('challenge-section');
+  if(!el) return;
+
+  if(!state.challenge || state.challenge.completed || state.challenge.failed){
+    el.innerHTML = renderChallengeStart();
+    return;
+  }
+
+  const weeks = getChallengeWeekProgress();
+  const now = new Date();
+  const start = new Date(state.challenge.startDate);
+  const end = new Date(start.getTime() + state.challenge.weeks * 7 * 24 * 3600 * 1000);
+  const daysLeft = Math.max(0, Math.ceil((end - now) / (24 * 3600 * 1000)));
+  const totalDone = weeks.reduce((a, w) => a + Math.min(w.sessions, w.target), 0);
+  const totalNeeded = state.challenge.weeks * state.challenge.weeklyTarget;
+  const pct = Math.round((totalDone / totalNeeded) * 100);
+
+  el.innerHTML = `
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+        <div>
+          <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em">Challenge 30j en cours</div>
+          <div style="font-family:'Fraunces',serif;font-size:20px;font-weight:900;margin-top:4px">3 séances/semaine</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:'Fraunces',serif;font-size:24px;font-weight:900;color:var(--coral)">${daysLeft}j</div>
+          <div style="font-size:11px;color:var(--muted)">restants</div>
+        </div>
+      </div>
+
+      <div style="background:var(--border);border-radius:50px;height:8px;margin-bottom:8px;overflow:hidden">
+        <div style="background:linear-gradient(90deg,var(--green),var(--blue));height:100%;border-radius:50px;width:${pct}%;transition:width .5s ease"></div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:16px">${totalDone}/${totalNeeded} séances · ${pct}%</div>
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">
+        ${weeks.map(w => {
+          const ok = w.sessions >= w.target;
+          const failed = w.isPast && !ok;
+          const bg = ok ? '#DCFCE7' : failed ? '#FEE2E2' : w.isCurrent ? '#EFF6FF' : 'var(--bg)';
+          const col = ok ? '#166534' : failed ? '#991B1B' : w.isCurrent ? 'var(--blue)' : 'var(--muted)';
+          const icon = ok ? '✅' : failed ? '❌' : w.isCurrent ? '⏳' : '○';
+          return `<div style="background:${bg};border-radius:10px;padding:8px;text-align:center">
+            <div style="font-size:16px">${icon}</div>
+            <div style="font-size:11px;font-weight:700;color:${col}">S${w.w}</div>
+            <div style="font-size:12px;color:${col}">${w.sessions}/${w.target}</div>
+          </div>`;
+        }).join('')}
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
+        <div style="background:#DCFCE7;border-radius:10px;padding:10px">
+          <div style="font-weight:700;color:#166534;margin-bottom:2px">🎁 Si tu réussis</div>
+          <div style="color:#166534">${state.challenge.rewardText}</div>
+        </div>
+        <div style="background:#FEF3C7;border-radius:10px;padding:10px">
+          <div style="font-weight:700;color:#92400E;margin-bottom:2px">⚠️ Si tu rates</div>
+          <div style="color:#92400E">${state.challenge.stakeText}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderChallengeStart(){
+  const prevFailed = state.challenge && state.challenge.failed;
+  const prevSuccess = state.challenge && state.challenge.completed;
+  const badge = prevSuccess ? '<div style="background:#DCFCE7;color:#166534;border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:13px">🏆 Challenge précédent réussi ! Lance le prochain.</div>' :
+                prevFailed ? '<div style="background:#FEE2E2;color:#991B1B;border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:13px">Tu as raté le dernier. Cette fois, tiens bon.</div>' : '';
+  return `
+    <div class="card" style="margin-bottom:16px">
+      <div style="font-family:'Fraunces',serif;font-size:20px;font-weight:900;margin-bottom:4px">Challenge 30j 🎯</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:16px">3 séances/semaine pendant 4 semaines. Carotte et bâton.</div>
+      ${badge}
+      <div style="margin-bottom:12px">
+        <label style="font-size:12px;font-weight:700;color:var(--muted);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em">🎁 Ta récompense si tu réussis</label>
+        <input id="challenge-reward" type="text" placeholder="Ex: Anneaux de gym, sortie resto..." style="width:100%;box-sizing:border-box;border:2px solid var(--border);border-radius:10px;padding:10px 12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;background:var(--bg)">
+      </div>
+      <div style="margin-bottom:16px">
+        <label style="font-size:12px;font-weight:700;color:var(--muted);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em">⚠️ Ton engagement si tu rates</label>
+        <input id="challenge-stake" type="text" placeholder="Ex: Inviter ma copine au restau + fleurs" style="width:100%;box-sizing:border-box;border:2px solid var(--border);border-radius:10px;padding:10px 12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;background:var(--bg)">
+      </div>
+      <button class="btn btn-g" style="width:100%;justify-content:center" onclick="launchChallenge()">🚀 Lancer le challenge</button>
+    </div>`;
+}
+
+function launchChallenge(){
+  const reward = document.getElementById('challenge-reward')?.value.trim();
+  const stake = document.getElementById('challenge-stake')?.value.trim();
+  if(!reward || !stake){ showToast('Remplis les deux champs !'); return; }
+  startChallenge(reward, stake);
+}
+
 function finishWorkout(){
   if(ws.completed.length<3)return;
   const sess=SESSIONS[ws.type];
@@ -1078,10 +1374,29 @@ function finishWorkout(){
   const isPartial=ws.completed.length<sess.exercises.length;
   const record={type:ws.type,date:new Date().toISOString(),duration,exercises:ws.completed.length,total:sess.exercises.length,partial:isPartial};
   state.history.push(record);
+
+  // Award XP
+  const baseXp = isPartial ? 50 : 100;
+  const xpResult = awardXp(baseXp, 'séance');
+
+  // Bonus XP for exercise progressions
+  let progBonus = 0;
+  sess.exercises.forEach(ex => {
+    const hist = state.repsHistory[ex.id]||[];
+    if(ex.threshold && hist.length >= 3){
+      const last3 = hist.slice(-3);
+      const ready = last3.every(e2 => (e2.reps||[]).length > 0 && e2.reps.every(r => r >= ex.threshold));
+      if(ready){ awardXp(25, 'progression'); progBonus += 25; }
+    }
+  });
+
+  // Check challenge progress
+  checkChallenge();
+
   const newBadges=checkBadges();
   saveState();
   clearWorkout();
-  showCompletion(record,newBadges);
+  showCompletion(record, newBadges, xpResult, progBonus);
   if(state.notifications)scheduleAlarms();
 }
 
@@ -1095,16 +1410,34 @@ function checkBadges(){
   return newB;
 }
 
-function showCompletion(rec,newBadges){
+function showCompletion(rec, newBadges, xpResult, progBonus){
   const streak=computeStreak();
+  const prog = xpProgress(state.xp);
   const titles=rec.partial?['Bien joué ! 💪','Partiel mais présent !']:['Séance dans la boîte 🎉','Bravo, Boris ! 💪','Encore une victoire !'];
   document.getElementById('c-title').textContent=titles[Math.floor(Math.random()*titles.length)];
   document.getElementById('c-sub').textContent=rec.partial?`${rec.exercises}/${rec.total} exercices · ${rec.duration} min`:`${SESSIONS[rec.type].name} · ${rec.duration} min · Séance ${rec.type}`;
+
+  const multBadge = xpResult && xpResult.mult > 1 ? `<span style="font-size:11px;background:#FEF9C3;color:#92400E;border-radius:50px;padding:2px 8px;font-weight:700">×${xpResult.mult} streak</span>` : '';
+  const xpEarned = xpResult ? xpResult.earned : 0;
+  const bonusXpStr = (xpResult && xpResult.bonusXp > 0) ? ` + ${xpResult.bonusXp} bonus palier` : '';
+  const levelUpBadge = xpResult && xpResult.levelUp ? `<div class="c-badge" style="background:linear-gradient(135deg,#F59E0B,#D97706)"><div class="c-badge-icon">⬆️</div><div class="c-badge-text"><strong>Niveau ${prog.level} !</strong><span>${LEVEL_TITLES[prog.level]}</span></div></div>` : '';
+
   document.getElementById('c-stats').innerHTML=`
     <div class="c-stat"><div class="c-stat-num" style="color:var(--green)">${rec.duration}<small style="font-size:14px">min</small></div><div class="c-stat-label">Durée</div></div>
     <div class="c-stat"><div class="c-stat-num" style="color:var(--blue)">${rec.exercises}</div><div class="c-stat-label">Exercices</div></div>
     <div class="c-stat"><div class="c-stat-num" style="color:var(--coral)">${streak}🔥</div><div class="c-stat-label">Streak</div></div>`;
-  document.getElementById('c-badges').innerHTML=newBadges.map(b=>`<div class="c-badge"><div class="c-badge-icon">${b.icon}</div><div class="c-badge-text"><strong>Badge débloqué !</strong><span>${b.label}</span></div></div>`).join('');
+
+  // XP earned display
+  const xpSection = `<div style="background:linear-gradient(135deg,#1E3A5F,#1E40AF);border-radius:14px;padding:14px 16px;margin:12px 0;color:#fff;text-align:center">
+    <div style="font-size:11px;opacity:.8;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px">XP gagnée</div>
+    <div style="font-family:'Fraunces',serif;font-size:28px;font-weight:900">+${xpEarned}${progBonus>0?' +'+progBonus:''}${bonusXpStr?'<span style="font-size:14px">'+bonusXpStr+'</span>':''} XP</div>
+    <div style="margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px">${multBadge}</div>
+    <div style="margin-top:10px;background:rgba(255,255,255,.15);border-radius:50px;height:6px;overflow:hidden">
+      <div style="background:#fff;height:100%;border-radius:50px;width:${prog.pct}%;transition:width .8s ease"></div>
+    </div>
+    <div style="font-size:12px;opacity:.8;margin-top:4px">Niv. ${prog.level} · ${prog.current}/${prog.needed} XP · ${LEVEL_TITLES[prog.level]}</div>
+  </div>`;
+  document.getElementById('c-badges').innerHTML = xpSection + levelUpBadge + newBadges.map(b=>`<div class="c-badge"><div class="c-badge-icon">${b.icon}</div><div class="c-badge-text"><strong>Badge débloqué !</strong><span>${b.label}</span></div></div>`).join('');
   const nextType=rec.type==='A'?'B':'A';
   const nextDay=getNextTrainingDay();
   document.getElementById('c-next').textContent=nextDay?`${nextDay.label} — Séance ${nextType} · ${SESSIONS[nextType].name}`:`Séance ${nextType} · ${SESSIONS[nextType].name}`;
@@ -1150,6 +1483,25 @@ function renderProgramme(){
       cont.appendChild(d);
     });
   });
+}
+
+function updateXpCard(){
+  const prog = xpProgress(state.xp);
+  const mult = getXpMultiplier();
+  const streak = computeStreak();
+  document.getElementById('xp-level-num').textContent = prog.level;
+  document.getElementById('xp-level-title').textContent = LEVEL_TITLES[prog.level] || '';
+  document.getElementById('xp-total').textContent = state.xp.toLocaleString();
+  const multLabels = {1.0:'×1.0 (pas de streak)', 1.2:'×1.2 (2 sem.)', 1.5:'×1.5 (3 sem.)', 2.0:'×2.0 🔥 (4+ sem.)'};
+  document.getElementById('xp-mult').textContent = (multLabels[mult] || '×'+mult) + ' multiplicateur';
+  document.getElementById('xp-bar').style.width = prog.pct + '%';
+  // Color bar: red if no streak, yellow if 1-2, green if 3+
+  const barColor = streak >= 4 ? 'linear-gradient(90deg,var(--green),#059669)' :
+                   streak >= 2 ? 'linear-gradient(90deg,var(--yellow),#D97706)' :
+                   'linear-gradient(90deg,var(--blue),var(--purple))';
+  document.getElementById('xp-bar').style.background = barColor;
+  document.getElementById('xp-progress-text').textContent = prog.current.toLocaleString() + ' / ' + prog.needed.toLocaleString() + ' XP';
+  document.getElementById('xp-next-level').textContent = prog.level >= 100 ? 'MAX 🔱' : 'Niveau ' + (prog.level + 1);
 }
 
 function updateSuivi(){
@@ -1377,7 +1729,7 @@ function exportData(){
 }
 function resetData(){
   if(confirm('Effacer tout l\'historique ? Action irréversible.')){
-    state.history=[];state.earnedBadges=[];state.repsHistory={};state.checkins={};saveState();updateToday();
+    state.history=[];state.earnedBadges=[];state.repsHistory={};state.checkins={};state.xp=0;state.level=1;state.challenge=null;saveState();updateToday();renderChallenge();
   }
 }
 
@@ -1445,8 +1797,11 @@ if('serviceWorker'in navigator&&location.hostname==='gw2rewards.github.io'){
 }
 
 loadState();
+// Migrate: recompute level from xp on load
+state.level = getLevelFromXp(state.xp || 0);
 renderProgramme();
 updateToday();
+renderChallenge();
 if(state.notifications)scheduleAlarms();
 setTimeout(()=>{
   const standalone=window.navigator.standalone||window.matchMedia('(display-mode: standalone)').matches;
