@@ -1140,23 +1140,18 @@ function renderProgramme(){
   ['A','B'].forEach(type=>{
     const sess=SESSIONS[type];
     const cont=document.getElementById('prog-'+type);
-    const hdr='<div style="background:linear-gradient(135deg,'+sess.color+','+darken(sess.color,35)+');border-radius:var(--r);padding:20px;margin-bottom:12px;color:#fff"><div style="opacity:.8;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Séance '+type+'</div><div style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;margin-bottom:4px">'+sess.name+'</div><div style="opacity:.85;font-size:13px">'+sess.exercises.length+' exercices · ~40 min</div></div>';
-    cont.innerHTML=hdr;
-    sess.exercises.forEach((ex,idx)=>{
+    cont.innerHTML=`<div style="background:linear-gradient(135deg,${sess.color},${darken(sess.color,35)});border-radius:var(--r);padding:20px;margin-bottom:12px;color:#fff"><div style="opacity:.8;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">S\u00e9ance ${type}</div><div style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;margin-bottom:4px">${sess.name}</div><div style="opacity:.85;font-size:13px">${sess.exercises.length} exercices \u00b7 ~40 min</div></div>`;
+    sess.exercises.forEach((ex,i)=>{
       const d=document.createElement('div');d.className='prog-ex';
-      const techList=ex.technique.map(t=>'<li style="margin-bottom:6px">'+t+'</li>').join('');
-      const linkBtn=ex.videoLink?'<div class="ex-detail-section"><a href="'+ex.videoLink+'" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:'+sess.color+'15;border:1.5px solid '+sess.color+'55;border-radius:50px;color:'+sess.color+';font-size:13px;font-weight:700;text-decoration:none">▶ Voir le mouvement</a></div>':'';
-      const altsHtml=ex.alts&&ex.alts.length?'<div class="ex-detail-section"><div class="ex-detail-title">🔄 Alternatives</div><div class="ex-detail-content">'+ex.alts.map(a=>'<div style="background:#F1F5F9;border-radius:10px;padding:10px 12px;margin-bottom:8px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="font-size:12px">'+a.diff+'</span><strong style="font-size:13px">'+a.name+'</strong></div><div style="font-size:12px;color:#64748B;line-height:1.5">'+a.desc+'</div></div>').join('')+'</div></div>':'';
-      d.innerHTML='<div class="prog-ex-header" onclick="this.parentElement.classList.toggle('open')"><div class="prog-num" style="background:'+sess.color+'22;color:'+sess.color+'">'+( idx+1)+'</div><div class="prog-info"><div class="prog-name">'+ex.name+'</div><div class="prog-sets">'+ex.sets+' × '+(ex.exType==='timed'?ex.repsTarget+'s':ex.repsTarget+' reps')+' · '+ex.restSecs+'s repos</div></div><span class="prog-chevron">▼</span></div><div class="prog-detail"><div class="ex-detail-section" style="margin-top:12px"><div class="ex-detail-title">🎯 Bénéfice</div><div class="ex-detail-content">'+ex.why+'</div></div><div class="ex-detail-section"><div class="ex-detail-title">📐 Technique</div><div class="ex-detail-content"><ul style="margin:0;padding-left:18px">'+techList+'</ul></div></div><div class="ex-detail-section"><div class="ex-detail-title">📈 Progression</div><div class="ex-detail-content">'+ex.progression+'</div></div>'+altsHtml+linkBtn+'</div>';
+      const techList=ex.technique.map(t=>`<li style="margin-bottom:6px">${t}</li>`).join('');
+      const linkBtn=ex.videoLink?`<div class="ex-detail-section"><a href="${ex.videoLink}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:${sess.color}15;border:1.5px solid ${sess.color}55;border-radius:50px;color:${sess.color};font-size:13px;font-weight:700;text-decoration:none">\u25b6 Voir le mouvement</a></div>`:'';
+      const altsHtml=ex.alts&&ex.alts.length?`<div class="ex-detail-section"><div class="ex-detail-title">\ud83d\udd04 Alternatives</div><div class="ex-detail-content">${ex.alts.map(a=>`<div style="background:#F1F5F9;border-radius:10px;padding:10px 12px;margin-bottom:8px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="font-size:12px">${a.diff}</span><strong style="font-size:13px">${a.name}</strong></div><div style="font-size:12px;color:#64748B;line-height:1.5">${a.desc}</div></div>`).join('')}</div></div>`:'';
+      d.innerHTML=`<div class="prog-ex-header" onclick="this.parentElement.classList.toggle('open')"><div class="prog-num" style="background:${sess.color}22;color:${sess.color}">${i+1}</div><div class="prog-info"><div class="prog-name">${ex.name}</div><div class="prog-sets">${ex.sets} \u00d7 ${ex.exType==='timed'?ex.repsTarget+'s':ex.repsTarget+' reps'} \u00b7 ${ex.restSecs}s repos</div></div><span class="prog-chevron">\u25bc</span></div><div class="prog-detail"><div class="ex-detail-section" style="margin-top:12px"><div class="ex-detail-title">\ud83c\udfaf B\u00e9n\u00e9fice</div><div class="ex-detail-content">${ex.why}</div></div><div class="ex-detail-section"><div class="ex-detail-title">\ud83d\udcd0 Technique</div><div class="ex-detail-content"><ul style="margin:0;padding-left:18px">${techList}</ul></div></div><div class="ex-detail-section"><div class="ex-detail-title">\ud83d\udcc8 Progression</div><div class="ex-detail-content">${ex.progression}</div></div>${altsHtml}${linkBtn}</div>`;
       cont.appendChild(d);
     });
   });
 }
 
-
-// ============================================================
-// SUIVI
-// ============================================================
 function updateSuivi(){
   document.getElementById('suivi-streak').textContent=computeStreak()+'🔥';
   document.getElementById('suivi-total').textContent=state.history.length;
