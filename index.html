@@ -442,6 +442,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
   </div>
   <div class="settings-section">
     <div class="settings-title">Export & données</div>
+    <div class="settings-row" onclick="recoverFromOldStorage()"><div class="s-left"><div class="s-icon" style="background:#FEF3C7">🔄</div><div><div class="s-label">Récupérer données perdues</div><div class="s-sub">Fusionner depuis une version précédente</div></div></div><span class="s-arrow">↺</span></div>
     <div class="settings-row" onclick="exportICS()"><div class="s-left"><div class="s-icon" style="background:#ECFDF5">📅</div><div><div class="s-label">Exporter .ics</div><div class="s-sub">Importer dans Google Agenda</div></div></div><span class="s-arrow">↓</span></div>
     <div class="settings-row" onclick="exportData()"><div class="s-left"><div class="s-icon" style="background:#EFF6FF">💾</div><div><div class="s-label">Sauvegarder mes données</div><div class="s-sub">Export JSON de l'historique</div></div></div><span class="s-arrow">↓</span></div>
     <div class="settings-row" onclick="resetData()"><div class="s-left"><div class="s-icon" style="background:#FEF2F2">🗑️</div><div><div class="s-label">Réinitialiser</div><div class="s-sub">Effacer tout l'historique</div></div></div><span class="s-arrow">→</span></div>
@@ -520,7 +521,7 @@ const SESSIONS = {
        'Respiration nasale si possible : inspire 2 temps, expire 2 temps'
      ],
      progression:'3×40 → 3×50 → 3×60. Alternative : remplace par 3×1 min de corde à sauter si tu veux + d\'intensité.',
-     threshold:null,videoLink:'https://musclewiki.com/cardio/male/cardio/jumping-jacks',alts:[{name:'Corde à sauter',diff:'⚡ Plus intense',desc:'3×1 min. Même cardio, meilleure coordination. Idéal pour progresser vers le HIIT.'},{name:'Marche genoux hauts',diff:'🟢 Plus facile',desc:'Genoux qui montent jusqu\'à la hanche. Parfait si tu es fatigué ou en récupération.'}]},
+     threshold:null,alts:[{name:'Corde à sauter',diff:'⚡ Plus intense',desc:'3×1 min. Même cardio, meilleure coordination. Idéal pour progresser vers le HIIT.'},{name:'Marche genoux hauts',diff:'🟢 Plus facile',desc:'Genoux qui montent jusqu\'à la hanche. Parfait si tu es fatigué ou en récupération.'}]},
     {id:'a2',name:'Squat poids du corps',exType:'reps',sets:3,repsTarget:10,restSecs:60,
      why:'Le mouvement fonctionnel le plus important : s\'asseoir et se lever. Renforce quadriceps, fessiers, ischio-jambiers et mollets en une seule répétition. Améliore la mobilité de hanche et la stabilité des genoux. Base de tout programme de force.',
      technique:[
@@ -532,7 +533,7 @@ const SESSIONS = {
        'Remonter en poussant dans les talons, expirer en montant'
      ],
      progression:'3×10 → 3×12 → 3×15 → squat bulgare (pied arrière sur chaise).',
-     threshold:15,videoLink:'https://musclewiki.com/bodyweight/male/quads/bodyweight-squat',alts:[{name:'Squat sur chaise',diff:'🟢 Plus facile',desc:'Descends jusqu\'à toucher la chaise et remonte. Idéal pour apprendre le mouvement.'},{name:'Squat bulgare',diff:'⚡ Plus intense',desc:'Pied arrière sur chaise. Force unilatérale et équilibre.'},{name:'Squat sauté',diff:'🔥 Explosif',desc:'Même mouvement mais tu sautes en remontant. Cardio + force.'}]},
+     threshold:15,videoLink:'https://www.youtube.com/results?search_query=squat+poids+du+corps+technique',alts:[{name:'Squat sur chaise',diff:'🟢 Plus facile',desc:'Descends jusqu\'à toucher la chaise et remonte. Idéal pour apprendre le mouvement.'},{name:'Squat bulgare',diff:'⚡ Plus intense',desc:'Pied arrière sur chaise. Force unilatérale et équilibre.'},{name:'Squat sauté',diff:'🔥 Explosif',desc:'Même mouvement mais tu sautes en remontant. Cardio + force.'}]},
     {id:'a3',name:'Pompes',exType:'reps',sets:3,repsTarget:10,restSecs:60,
      why:'L\'exercice push le plus complet au sol. Développe les pectoraux, les deltoïdes antérieurs, les triceps et sollicite fortement le gainage du tronc. Un seul exercice qui travaille push + core simultanément. Tes pompes actuelles (18/15/10) montrent déjà un bon niveau de départ.',
      technique:[
@@ -544,7 +545,7 @@ const SESSIONS = {
        'Si trop difficile : pompes sur les genoux en gardant l\'alignement bassin-épaules'
      ],
      progression:'3×10 → 3×12 → 3×15 → pause 2s en bas → pompes déclinées (pieds surélevés).',
-     threshold:15,videoLink:'https://musclewiki.com/bodyweight/male/chest/push-up',alts:[{name:'Pompes sur les genoux',diff:'🟢 Plus facile',desc:'Même alignement bassin-épaules mais genoux au sol. -30% de charge.'},{name:'Pompes inclinées',diff:'🟢 Plus facile',desc:'Mains sur le canapé. Angle réduit = moins difficile.'},{name:'Pompes déclinées',diff:'⚡ Plus intense',desc:'Pieds surélevés sur chaise. Cible épaules et haut des pectoraux.'}]},
+     threshold:15,videoLink:'https://www.youtube.com/results?search_query=pompes+technique+debutant',alts:[{name:'Pompes sur les genoux',diff:'🟢 Plus facile',desc:'Même alignement bassin-épaules mais genoux au sol. -30% de charge.'},{name:'Pompes inclinées',diff:'🟢 Plus facile',desc:'Mains sur le canapé. Angle réduit = moins difficile.'},{name:'Pompes déclinées',diff:'⚡ Plus intense',desc:'Pieds surélevés sur chaise. Cible épaules et haut des pectoraux.'}]},
     {id:'a4',name:'Gainage frontal',exType:'timed',sets:3,repsTarget:25,restSecs:45,
      why:'Renforce le transverse de l\'abdomen — le muscle profond qui "ceinture" le tronc et protège le bas du dos. Contrairement aux crunchs, le gainage ne comprime pas les vertèbres. C\'est la base de toute stabilité pour les autres exercices.',
      technique:[
@@ -556,7 +557,7 @@ const SESSIONS = {
        'Si ça tremble après 15s, c\'est normal et bénéfique — tiens jusqu\'au bout'
      ],
      progression:'25s → 30s → 40s → 50s → 60s → gainage avec levée de jambe alternée 3s.',
-     threshold:50,videoLink:'https://musclewiki.com/bodyweight/male/abdominals/plank',alts:[{name:'Gainage sur les genoux',diff:'🟢 Plus facile',desc:'Même position mais genoux au sol. Réduit la charge sur le core.'},{name:'Gainage + levée jambe',diff:'⚡ Plus intense',desc:'Lever une jambe 3s en alternant. Déstabilise et renforce davantage.'},{name:'Gainage latéral',diff:'🔄 Variation',desc:'Sur l\'avant-bras latéral. Cible les obliques.'}]},
+     threshold:50,videoLink:'https://www.youtube.com/results?search_query=gainage+frontal+planche+technique',alts:[{name:'Gainage sur les genoux',diff:'🟢 Plus facile',desc:'Même position mais genoux au sol. Réduit la charge sur le core.'},{name:'Gainage + levée jambe',diff:'⚡ Plus intense',desc:'Lever une jambe 3s en alternant. Déstabilise et renforce davantage.'},{name:'Gainage latéral',diff:'🔄 Variation',desc:'Sur l\'avant-bras latéral. Cible les obliques.'}]},
     {id:'a5',name:'Hip hinge',exType:'reps',sets:3,repsTarget:10,restSecs:60,
      why:'Renforce toute la chaîne postérieure : ischio-jambiers, fessiers et érecteurs du rachis. Apprentissage du mouvement de charnière à la hanche — fondamental pour prévenir les blessures de dos dans la vie quotidienne (ramasser un objet, se pencher). Préparation au soulevé de terre.',
      technique:[
@@ -579,7 +580,7 @@ const SESSIONS = {
        'Si trop difficile, rapprocher légèrement les mains sans aller jusqu\'au diamant parfait'
      ],
      progression:'2×6 → 2×8 → 2×10 → pieds surélevés sur chaise.',
-     threshold:10,videoLink:'https://musclewiki.com/bodyweight/male/triceps/diamond-push-up',alts:[{name:'Dips sur chaise',diff:'🔄 Variation',desc:'Mains sur chaise derrière toi, pieds au sol, descendre et remonter. Triceps pur.'},{name:'Pompes diamant genoux',diff:'🟢 Plus facile',desc:'Même position mains mais genoux au sol. -30% de charge.'}]}
+     threshold:10,videoLink:'https://www.youtube.com/results?search_query=pompes+diamant+tutorial',alts:[{name:'Dips sur chaise',diff:'🔄 Variation',desc:'Mains sur chaise derrière toi, pieds au sol, descendre et remonter. Triceps pur.'},{name:'Pompes diamant genoux',diff:'🟢 Plus facile',desc:'Même position mains mais genoux au sol. -30% de charge.'}]}
   ]},
   B:{type:'B',name:'Full Body Pull/Postural',color:'#4A90D9',exercises:[
     {id:'b1',name:'Jumping jacks',exType:'cardio',sets:3,repsTarget:40,restSecs:30,
@@ -592,7 +593,7 @@ const SESSIONS = {
        'Garde le buste droit — ne pas se pencher en avant quand la fatigue arrive'
      ],
      progression:'3×40 → 3×50 → 3×60. Alternative : 3×1 min de corde à sauter.',
-     threshold:null,videoLink:'https://musclewiki.com/cardio/male/cardio/jumping-jacks',alts:[{name:'Corde à sauter',diff:'⚡ Plus intense',desc:'3×1 min. Remplace directement les jumping jacks avec plus d\'intensité.'},{name:'Pas de côté rapides',diff:'🟢 Plus facile',desc:'Pas chassés latéraux sur 2m. Cardio doux, sans impact.'}]},
+     threshold:null,alts:[{name:'Corde à sauter',diff:'⚡ Plus intense',desc:'3×1 min. Remplace directement les jumping jacks avec plus d\'intensité.'},{name:'Pas de côté rapides',diff:'🟢 Plus facile',desc:'Pas chassés latéraux sur 2m. Cardio doux, sans impact.'}]},
     {id:'b2',name:'Squat bulgare',exType:'reps',sets:3,repsTarget:6,restSecs:60,
      why:'Version unilatérale du squat — chaque jambe travaille indépendamment. Corrige les asymétries de force entre jambes gauche et droite. Développe la stabilité de hanche et l\'équilibre. Plus difficile que le squat classique à charge égale : 6 reps par jambe suffisent pour débuter.',
      technique:[
@@ -604,7 +605,7 @@ const SESSIONS = {
        'Remonter en poussant dans le talon avant. Faire toutes les reps d\'un côté, puis changer'
      ],
      progression:'3×6 → 3×8 → 3×10/jambe → bouteilles d\'eau lestées dans chaque main.',
-     threshold:10,videoLink:'https://musclewiki.com/bodyweight/male/quads/bulgarian-split-squat',alts:[{name:'Fente avant',diff:'🟢 Plus facile',desc:'Grand pas en avant, genou avant à 90°. Même muscles, plus stable.'},{name:'Fente latérale',diff:'🔄 Variation',desc:'Grand pas sur le côté. Adducteurs très ciblés.'},{name:'Squat bulgare lesté',diff:'⚡ Plus intense',desc:'Même exercice avec bouteilles d\'eau dans chaque main.'}]},
+     threshold:10,videoLink:'https://www.youtube.com/results?search_query=squat+bulgare+technique+debutant',alts:[{name:'Fente avant',diff:'🟢 Plus facile',desc:'Grand pas en avant, genou avant à 90°. Même muscles, plus stable.'},{name:'Fente latérale',diff:'🔄 Variation',desc:'Grand pas sur le côté. Adducteurs très ciblés.'},{name:'Squat bulgare lesté',diff:'⚡ Plus intense',desc:'Même exercice avec bouteilles d\'eau dans chaque main.'}]},
     {id:'b3',name:'W au sol',exType:'reps',sets:3,repsTarget:12,restSecs:60,
      why:'Renforce les rhomboïdes et les trapèzes moyens — les muscles entre et sous les omoplates. Ces muscles sont chroniquement sous-sollicités dans la vie moderne (travail sur écran, position assise). Les renforcer corrige la posture voûtée et prévient les douleurs cervicales et dorsales. Complément indispensable aux pompes pour équilibrer le dos.',
      technique:[
@@ -628,7 +629,7 @@ const SESSIONS = {
        'Recommencer de l\'autre côté. Chaque côté compte comme une série'
      ],
      progression:'15s → 20s → 25s → 30s → levée de jambe pendant le gainage.',
-     threshold:30,videoLink:'https://musclewiki.com/bodyweight/male/obliques/side-plank',alts:[{name:'Gainage latéral genoux',diff:'🟢 Plus facile',desc:'Genou du bas au sol, même alignement. -30% de charge.'},{name:'Gainage latéral + levée jambe',diff:'⚡ Plus intense',desc:'Lever la jambe du dessus 3s. Core latéral ++.'}]},
+     threshold:30,videoLink:'https://www.youtube.com/results?search_query=side+plank+tutorial+gainage+lateral',alts:[{name:'Gainage latéral genoux',diff:'🟢 Plus facile',desc:'Genou du bas au sol, même alignement. -30% de charge.'},{name:'Gainage latéral + levée jambe',diff:'⚡ Plus intense',desc:'Lever la jambe du dessus 3s. Core latéral ++.'}]},
     {id:'b5',name:'Pompes déclinées',exType:'reps',sets:3,repsTarget:6,restSecs:60,
      why:'Variante des pompes qui incline le corps (pieds plus hauts que les mains) pour cibler spécifiquement les deltoïdes antérieurs (épaules avant) et la partie claviculaire des pectoraux. Progression naturelle vers les pompes sur épaule et le handstand push-up.',
      technique:[
@@ -640,7 +641,7 @@ const SESSIONS = {
        'Plus les pieds sont hauts, plus l\'exercice est difficile et cible les épaules'
      ],
      progression:'3×6 → 3×8 → 3×10 → pieds plus hauts (tabouret, puis mur).',
-     threshold:10,videoLink:'https://musclewiki.com/bodyweight/male/shoulders/decline-push-up',alts:[{name:'Pompes classiques',diff:'🟢 Plus facile',desc:'Si les déclinées sont trop difficiles, bonne technique avant tout.'},{name:'Pike push-up',diff:'⚡ Plus intense',desc:'Fesses en l\'air, descendre la tête vers le sol. Épaules très ciblées.'}]},
+     threshold:10,videoLink:'https://www.youtube.com/results?search_query=pompes+declin%C3%A9es+technique',alts:[{name:'Pompes classiques',diff:'🟢 Plus facile',desc:'Si les déclinées sont trop difficiles, bonne technique avant tout.'},{name:'Pike push-up',diff:'⚡ Plus intense',desc:'Fesses en l\'air, descendre la tête vers le sol. Épaules très ciblées.'}]},
     {id:'b6',name:'Superman',exType:'reps',sets:3,repsTarget:10,restSecs:45,
      why:'Extension dorsale complète qui renforce toute la chaîne postérieure : érecteurs du rachis, fessiers et ischio-jambiers simultanément. Prévient activement le mal de dos. Exercice allongé sur le ventre — enchaîne naturellement avec le W au sol sans changer de position.',
      technique:[
@@ -1553,19 +1554,19 @@ function renderWeekGraph(){
   const wb=document.getElementById('week-bars');wb.innerHTML='';
   const curWeek=getWeekKey(new Date());
   const weeks=[];
+  // Generate 8 weeks: 7 weeks ago → current week (i=7 is oldest, i=0 is current)
   for(let i=7;i>=0;i--){
     const base=new Date(curWeek+'T12:00:00');
     base.setDate(base.getDate()-i*7);
-    weeks.push(getWeekKey(base));
+    weeks.push({key:getWeekKey(base),weeksAgo:i});
   }
-  weeks.forEach((key,idx)=>{
+  weeks.forEach(({key,weeksAgo})=>{
     const sA=state.history.filter(h=>getWeekKey(new Date(h.date))===key&&h.type==='A').length;
     const sB=state.history.filter(h=>getWeekKey(new Date(h.date))===key&&h.type==='B').length;
     const total=sA+sB;
     const pct=Math.min(100,(total/2)*100);
     const bg=sA>0&&sB>0?'linear-gradient(to top,var(--green),var(--blue))':sA>0?'var(--green)':sB>0?'var(--blue)':'var(--border)';
-    const isCur=key===curWeek;
-    const weeksAgo=7-idx;
+    const isCur=weeksAgo===0;
     const label=isCur?'Cur':(weeksAgo===1?'-1':`-${weeksAgo}`);
     const col=document.createElement('div');col.className='week-col';
     col.style=isCur?'font-weight:700':'';
@@ -1660,6 +1661,44 @@ async function sendTestNotif(){
   }catch(e){
     alert('Échec — recharge la page une fois pour activer le Service Worker, puis réessaie.');
   }
+}
+
+function recoverFromOldStorage(){
+  const keys=['bodyflow_v17','bodyflow_v16','bodyflow_v15','bodyflow_v13'];
+  let recovered=false;
+  for(const key of keys){
+    try{
+      const raw=localStorage.getItem(key);
+      if(!raw)continue;
+      const old=JSON.parse(raw);
+      if(!old.history||!old.history.length)continue;
+      // Merge: add any records not already in current history
+      const existingDates=new Set(state.history.map(h=>h.date));
+      const newRecords=old.history.filter(h=>!existingDates.has(h.date));
+      if(newRecords.length>0){
+        state.history=[...state.history,...newRecords].sort((a,b)=>new Date(a.date)-new Date(b.date));
+        // Also recover repsHistory
+        if(old.repsHistory){
+          Object.keys(old.repsHistory).forEach(exId=>{
+            if(!state.repsHistory[exId])state.repsHistory[exId]=[];
+            const existingRepDates=new Set(state.repsHistory[exId].map(r=>r.date));
+            const newReps=old.repsHistory[exId].filter(r=>!existingRepDates.has(r.date));
+            state.repsHistory[exId]=[...state.repsHistory[exId],...newReps];
+          });
+        }
+        saveState();
+        showToast(`✅ ${newRecords.length} séance(s) récupérée(s) depuis ${key}`);
+        updateToday();
+        updateSuivi();
+        recovered=true;
+      }else{
+        showToast(`Aucune nouvelle séance dans ${key}`);
+        recovered=true;
+      }
+      break;
+    }catch(e){}
+  }
+  if(!recovered)showToast('Aucune donnée ancienne trouvée');
 }
 
 function showToast(msg){
