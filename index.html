@@ -422,7 +422,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     <div class="settings-row" onclick="exportData()"><div class="s-left"><div class="s-icon" style="background:#EFF6FF">💾</div><div><div class="s-label">Sauvegarder mes données</div><div class="s-sub">Export JSON de l'historique</div></div></div><span class="s-arrow">↓</span></div>
     <div class="settings-row" onclick="resetData()"><div class="s-left"><div class="s-icon" style="background:#FEF2F2">🗑️</div><div><div class="s-label">Réinitialiser</div><div class="s-sub">Effacer tout l'historique</div></div></div><span class="s-arrow">→</span></div>
   </div>
-  <div style="text-align:center;color:var(--muted);font-size:12px;padding:20px 0">BodyFlow v1.6 · Pour Boris 💪</div>
+  <div style="text-align:center;color:var(--muted);font-size:12px;padding:20px 0">BodyFlow v1.7 · Pour Boris 💪</div>
 </div>
 
 <!-- NAV -->
@@ -496,7 +496,7 @@ const SESSIONS = {
        'Respiration nasale si possible : inspire 2 temps, expire 2 temps'
      ],
      progression:'3×40 → 3×50 → 3×60. Alternative : remplace par 3×1 min de corde à sauter si tu veux + d\'intensité.',
-     threshold:null},
+     threshold:null,videoLink:'https://musclewiki.com/cardio/male/cardio/jumping-jacks',alts:[{name:'Corde à sauter',diff:'⚡ Plus intense',desc:'3×1 min. Même cardio, meilleure coordination. Idéal pour progresser vers le HIIT.'},{name:'Marche genoux hauts',diff:'🟢 Plus facile',desc:'Genoux qui montent jusqu\'à la hanche. Parfait si tu es fatigué ou en récupération.'}]},
     {id:'a2',name:'Squat poids du corps',exType:'reps',sets:3,repsTarget:10,restSecs:60,
      why:'Le mouvement fonctionnel le plus important : s\'asseoir et se lever. Renforce quadriceps, fessiers, ischio-jambiers et mollets en une seule répétition. Améliore la mobilité de hanche et la stabilité des genoux. Base de tout programme de force.',
      technique:[
@@ -508,7 +508,7 @@ const SESSIONS = {
        'Remonter en poussant dans les talons, expirer en montant'
      ],
      progression:'3×10 → 3×12 → 3×15 → squat bulgare (pied arrière sur chaise).',
-     threshold:15},
+     threshold:15,videoLink:'https://musclewiki.com/bodyweight/male/quads/bodyweight-squat',alts:[{name:'Squat sur chaise',diff:'🟢 Plus facile',desc:'Descends jusqu\'à toucher la chaise et remonte. Idéal pour apprendre le mouvement.'},{name:'Squat bulgare',diff:'⚡ Plus intense',desc:'Pied arrière sur chaise. Force unilatérale et équilibre.'},{name:'Squat sauté',diff:'🔥 Explosif',desc:'Même mouvement mais tu sautes en remontant. Cardio + force.'}]},
     {id:'a3',name:'Pompes',exType:'reps',sets:3,repsTarget:10,restSecs:60,
      why:'L\'exercice push le plus complet au sol. Développe les pectoraux, les deltoïdes antérieurs, les triceps et sollicite fortement le gainage du tronc. Un seul exercice qui travaille push + core simultanément. Tes pompes actuelles (18/15/10) montrent déjà un bon niveau de départ.',
      technique:[
@@ -520,7 +520,7 @@ const SESSIONS = {
        'Si trop difficile : pompes sur les genoux en gardant l\'alignement bassin-épaules'
      ],
      progression:'3×10 → 3×12 → 3×15 → pause 2s en bas → pompes déclinées (pieds surélevés).',
-     threshold:15},
+     threshold:15,videoLink:'https://musclewiki.com/bodyweight/male/chest/push-up',alts:[{name:'Pompes sur les genoux',diff:'🟢 Plus facile',desc:'Même alignement bassin-épaules mais genoux au sol. -30% de charge.'},{name:'Pompes inclinées',diff:'🟢 Plus facile',desc:'Mains sur le canapé. Angle réduit = moins difficile.'},{name:'Pompes déclinées',diff:'⚡ Plus intense',desc:'Pieds surélevés sur chaise. Cible épaules et haut des pectoraux.'}]},
     {id:'a4',name:'Gainage frontal',exType:'timed',sets:3,repsTarget:25,restSecs:45,
      why:'Renforce le transverse de l\'abdomen — le muscle profond qui "ceinture" le tronc et protège le bas du dos. Contrairement aux crunchs, le gainage ne comprime pas les vertèbres. C\'est la base de toute stabilité pour les autres exercices.',
      technique:[
@@ -532,7 +532,7 @@ const SESSIONS = {
        'Si ça tremble après 15s, c\'est normal et bénéfique — tiens jusqu\'au bout'
      ],
      progression:'25s → 30s → 40s → 50s → 60s → gainage avec levée de jambe alternée 3s.',
-     threshold:50},
+     threshold:50,videoLink:'https://musclewiki.com/bodyweight/male/abdominals/plank',alts:[{name:'Gainage sur les genoux',diff:'🟢 Plus facile',desc:'Même position mais genoux au sol. Réduit la charge sur le core.'},{name:'Gainage + levée jambe',diff:'⚡ Plus intense',desc:'Lever une jambe 3s en alternant. Déstabilise et renforce davantage.'},{name:'Gainage latéral',diff:'🔄 Variation',desc:'Sur l\'avant-bras latéral. Cible les obliques.'}]},
     {id:'a5',name:'Hip hinge',exType:'reps',sets:3,repsTarget:10,restSecs:60,
      why:'Renforce toute la chaîne postérieure : ischio-jambiers, fessiers et érecteurs du rachis. Apprentissage du mouvement de charnière à la hanche — fondamental pour prévenir les blessures de dos dans la vie quotidienne (ramasser un objet, se pencher). Préparation au soulevé de terre.',
      technique:[
@@ -544,7 +544,7 @@ const SESSIONS = {
        'Contracter les fessiers pour revenir à la verticale, expirer en remontant'
      ],
      progression:'3×10 → 3×12 → avec bouteilles d\'eau lestées → sac à dos chargé (Romanian deadlift).',
-     threshold:15},
+     threshold:15,videoLink:'https://www.youtube.com/results?search_query=hip+hinge+bodyweight+tutorial',alts:[{name:'Good morning mains nuque',diff:'⚡ Plus intense',desc:'Mains derrière la nuque. Augmente le bras de levier.'},{name:'Pont fessier',diff:'🔄 Variation',desc:'Allongé sur le dos, pieds au sol, monter le bassin. Fessiers + ischio.'},{name:'Deadlift bouteilles',diff:'⚡ Plus intense',desc:'Même mouvement avec bouteilles d\'eau lestées dans chaque main.'}]},
     {id:'a6',name:'Pompes diamant',exType:'reps',sets:2,repsTarget:6,restSecs:60,
      why:'Variation des pompes qui isole spécifiquement les triceps (arrière des bras) et la partie sternale des pectoraux. La proximité des mains augmente la difficulté et le recrutement des triceps. Exercice finisher idéal après les pompes classiques.',
      technique:[
@@ -555,7 +555,7 @@ const SESSIONS = {
        'Si trop difficile, rapprocher légèrement les mains sans aller jusqu\'au diamant parfait'
      ],
      progression:'2×6 → 2×8 → 2×10 → pieds surélevés sur chaise.',
-     threshold:10}
+     threshold:10,videoLink:'https://musclewiki.com/bodyweight/male/triceps/diamond-push-up',alts:[{name:'Dips sur chaise',diff:'🔄 Variation',desc:'Mains sur chaise derrière toi, pieds au sol, descendre et remonter. Triceps pur.'},{name:'Pompes diamant genoux',diff:'🟢 Plus facile',desc:'Même position mains mais genoux au sol. -30% de charge.'}]}
   ]},
   B:{type:'B',name:'Full Body Pull/Postural',color:'#4A90D9',exercises:[
     {id:'b1',name:'Jumping jacks',exType:'cardio',sets:3,repsTarget:40,restSecs:30,
@@ -568,7 +568,7 @@ const SESSIONS = {
        'Garde le buste droit — ne pas se pencher en avant quand la fatigue arrive'
      ],
      progression:'3×40 → 3×50 → 3×60. Alternative : 3×1 min de corde à sauter.',
-     threshold:null},
+     threshold:null,videoLink:'https://musclewiki.com/cardio/male/cardio/jumping-jacks',alts:[{name:'Corde à sauter',diff:'⚡ Plus intense',desc:'3×1 min. Remplace directement les jumping jacks avec plus d\'intensité.'},{name:'Pas de côté rapides',diff:'🟢 Plus facile',desc:'Pas chassés latéraux sur 2m. Cardio doux, sans impact.'}]},
     {id:'b2',name:'Squat bulgare',exType:'reps',sets:3,repsTarget:6,restSecs:60,
      why:'Version unilatérale du squat — chaque jambe travaille indépendamment. Corrige les asymétries de force entre jambes gauche et droite. Développe la stabilité de hanche et l\'équilibre. Plus difficile que le squat classique à charge égale : 6 reps par jambe suffisent pour débuter.',
      technique:[
@@ -580,7 +580,7 @@ const SESSIONS = {
        'Remonter en poussant dans le talon avant. Faire toutes les reps d\'un côté, puis changer'
      ],
      progression:'3×6 → 3×8 → 3×10/jambe → bouteilles d\'eau lestées dans chaque main.',
-     threshold:10},
+     threshold:10,videoLink:'https://musclewiki.com/bodyweight/male/quads/bulgarian-split-squat',alts:[{name:'Fente avant',diff:'🟢 Plus facile',desc:'Grand pas en avant, genou avant à 90°. Même muscles, plus stable.'},{name:'Fente latérale',diff:'🔄 Variation',desc:'Grand pas sur le côté. Adducteurs très ciblés.'},{name:'Squat bulgare lesté',diff:'⚡ Plus intense',desc:'Même exercice avec bouteilles d\'eau dans chaque main.'}]},
     {id:'b3',name:'W au sol',exType:'reps',sets:3,repsTarget:12,restSecs:60,
      why:'Renforce les rhomboïdes et les trapèzes moyens — les muscles entre et sous les omoplates. Ces muscles sont chroniquement sous-sollicités dans la vie moderne (travail sur écran, position assise). Les renforcer corrige la posture voûtée et prévient les douleurs cervicales et dorsales. Complément indispensable aux pompes pour équilibrer le dos.',
      technique:[
@@ -592,7 +592,7 @@ const SESSIONS = {
        'Ne cherche pas à monter haut — cherche à serrer fort. L\'amplitude est faible, l\'intensité musculaire est élevée'
      ],
      progression:'3×12 → 3×15 → W lesté : bouteille 50cl dans chaque main → bouteille 1L.',
-     threshold:15},
+     threshold:15,videoLink:'https://www.youtube.com/results?search_query=W+exercise+posture+rhomboids+floor',alts:[{name:'W lesté bouteilles 50cl',diff:'⚡ Plus intense',desc:'Même mouvement avec une bouteille dans chaque main. Difficulté nettement augmentée.'},{name:'Y au sol',diff:'⚡ Variation avancée',desc:'Bras tendus en Y à 45° au-dessus de la tête. Cible les trapèzes inférieurs.'},{name:'Superman',diff:'🔄 Variation',desc:'Bras et jambes levés simultanément. Toute la chaîne postérieure.'}]},
     {id:'b4',name:'Gainage latéral',exType:'timed',sets:3,repsTarget:15,restSecs:45,
      why:'Renforce les obliques et les muscles stabilisateurs latéraux du rachis. Ces muscles maintiennent le bassin horizontal quand tu marches ou cours. Complément direct au gainage frontal pour une ceinture abdominale complète.',
      technique:[
@@ -604,7 +604,7 @@ const SESSIONS = {
        'Recommencer de l\'autre côté. Chaque côté compte comme une série'
      ],
      progression:'15s → 20s → 25s → 30s → levée de jambe pendant le gainage.',
-     threshold:30},
+     threshold:30,videoLink:'https://musclewiki.com/bodyweight/male/obliques/side-plank',alts:[{name:'Gainage latéral genoux',diff:'🟢 Plus facile',desc:'Genou du bas au sol, même alignement. -30% de charge.'},{name:'Gainage latéral + levée jambe',diff:'⚡ Plus intense',desc:'Lever la jambe du dessus 3s. Core latéral ++.'}]},
     {id:'b5',name:'Pompes déclinées',exType:'reps',sets:3,repsTarget:6,restSecs:60,
      why:'Variante des pompes qui incline le corps (pieds plus hauts que les mains) pour cibler spécifiquement les deltoïdes antérieurs (épaules avant) et la partie claviculaire des pectoraux. Progression naturelle vers les pompes sur épaule et le handstand push-up.',
      technique:[
@@ -616,7 +616,7 @@ const SESSIONS = {
        'Plus les pieds sont hauts, plus l\'exercice est difficile et cible les épaules'
      ],
      progression:'3×6 → 3×8 → 3×10 → pieds plus hauts (tabouret, puis mur).',
-     threshold:10},
+     threshold:10,videoLink:'https://musclewiki.com/bodyweight/male/shoulders/decline-push-up',alts:[{name:'Pompes classiques',diff:'🟢 Plus facile',desc:'Si les déclinées sont trop difficiles, bonne technique avant tout.'},{name:'Pike push-up',diff:'⚡ Plus intense',desc:'Fesses en l\'air, descendre la tête vers le sol. Épaules très ciblées.'}]},
     {id:'b6',name:'Superman',exType:'reps',sets:3,repsTarget:10,restSecs:45,
      why:'Extension dorsale complète qui renforce toute la chaîne postérieure : érecteurs du rachis, fessiers et ischio-jambiers simultanément. Prévient activement le mal de dos. Exercice allongé sur le ventre — enchaîne naturellement avec le W au sol sans changer de position.',
      technique:[
@@ -628,7 +628,7 @@ const SESSIONS = {
        'Respirer : inspire avant de monter, expire en tenant la position haute'
      ],
      progression:'3×10 → 3×12 → 3×15 → tiens 5s en haut → Superman alterné (bras gauche + jambe droite, puis inverse).',
-     threshold:15}
+     threshold:15,videoLink:'https://www.youtube.com/results?search_query=superman+exercise+back+extension+tutorial',alts:[{name:'Superman alterné',diff:'⚡ Plus intense',desc:'Bras gauche + jambe droite simultanément, tenir 3s, alterner.'},{name:'Pont fessier',diff:'🟢 Plus facile',desc:'Sur le dos, pieds au sol, monter le bassin. Chaîne postérieure plus accessible.'},{name:'Bird dog',diff:'🔄 Variation',desc:'À 4 pattes, étendre bras droit + jambe gauche. Stabilité du tronc.'}]}
   ]}
 };
 
@@ -699,7 +699,7 @@ let selectedExId=null;
 function loadState(){
   // Try v1.3 key first, then migrate from v1.2
   try{
-    const s=localStorage.getItem('bodyflow_v16')||localStorage.getItem('bodyflow_v15')||localStorage.getItem('bodyflow_v13');
+    const s=localStorage.getItem('bodyflow_v17')||localStorage.getItem('bodyflow_v16')||localStorage.getItem('bodyflow_v15')||localStorage.getItem('bodyflow_v13');
     if(s){state={...state,...JSON.parse(s)};return;}
     const old=localStorage.getItem('bodyflow_v12');
     if(old){
@@ -710,7 +710,7 @@ function loadState(){
     }
   }catch(e){}
 }
-function saveState(){localStorage.setItem('bodyflow_v16',JSON.stringify(state))}
+function saveState(){localStorage.setItem('bodyflow_v17',JSON.stringify(state))}
 
 // ============================================================
 // NAVIGATION
@@ -1139,15 +1139,20 @@ function showProg(type,btn){
 function renderProgramme(){
   ['A','B'].forEach(type=>{
     const sess=SESSIONS[type];
-    const c=document.getElementById('prog-'+type);
-    c.innerHTML=`<div style="background:linear-gradient(135deg,${sess.color},${darken(sess.color,35)});border-radius:var(--r);padding:20px;margin-bottom:12px;color:#fff"><div style="opacity:.8;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Séance ${type}</div><div style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;margin-bottom:4px">${sess.name}</div><div style="opacity:.85;font-size:13px">${sess.exercises.length} exercices · ~40 min</div></div>`;
+    const cont=document.getElementById('prog-'+type);
+    const hdr='<div style="background:linear-gradient(135deg,'+sess.color+','+darken(sess.color,35)+');border-radius:var(--r);padding:20px;margin-bottom:12px;color:#fff"><div style="opacity:.8;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Séance '+type+'</div><div style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;margin-bottom:4px">'+sess.name+'</div><div style="opacity:.85;font-size:13px">'+sess.exercises.length+' exercices · ~40 min</div></div>';
+    cont.innerHTML=hdr;
     sess.exercises.forEach((ex,idx)=>{
       const d=document.createElement('div');d.className='prog-ex';
-      d.innerHTML=`<div class="prog-ex-header" onclick="this.parentElement.classList.toggle('open')"><div class="prog-num" style="background:${sess.color}22;color:${sess.color}">${idx+1}</div><div class="prog-info"><div class="prog-name">${ex.name}</div><div class="prog-sets">${ex.sets} × ${ex.exType==='timed'?ex.repsTarget+'s':ex.repsTarget+' reps'} · ${ex.restSecs}s repos</div></div><span class="prog-chevron">▼</span></div><div class="prog-detail"><div class="ex-detail-section" style="margin-top:12px"><div class="ex-detail-title">🎯 Bénéfice</div><div class="ex-detail-content">${ex.why}</div></div><div class="ex-detail-section"><div class="ex-detail-title">📐 Technique</div><div class="ex-detail-content"><ul>${ex.technique.map(t=>`<li>${t}</li>`).join('')}</ul></div></div><div class="ex-detail-section"><div class="ex-detail-title">📈 Progression</div><div class="ex-detail-content">${ex.progression}</div></div></div>`;
-      c.appendChild(d);
+      const techList=ex.technique.map(t=>'<li style="margin-bottom:6px">'+t+'</li>').join('');
+      const linkBtn=ex.videoLink?'<div class="ex-detail-section"><a href="'+ex.videoLink+'" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:'+sess.color+'15;border:1.5px solid '+sess.color+'55;border-radius:50px;color:'+sess.color+';font-size:13px;font-weight:700;text-decoration:none">▶ Voir le mouvement</a></div>':'';
+      const altsHtml=ex.alts&&ex.alts.length?'<div class="ex-detail-section"><div class="ex-detail-title">🔄 Alternatives</div><div class="ex-detail-content">'+ex.alts.map(a=>'<div style="background:#F1F5F9;border-radius:10px;padding:10px 12px;margin-bottom:8px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="font-size:12px">'+a.diff+'</span><strong style="font-size:13px">'+a.name+'</strong></div><div style="font-size:12px;color:#64748B;line-height:1.5">'+a.desc+'</div></div>').join('')+'</div></div>':'';
+      d.innerHTML='<div class="prog-ex-header" onclick="this.parentElement.classList.toggle('open')"><div class="prog-num" style="background:'+sess.color+'22;color:'+sess.color+'">'+( idx+1)+'</div><div class="prog-info"><div class="prog-name">'+ex.name+'</div><div class="prog-sets">'+ex.sets+' × '+(ex.exType==='timed'?ex.repsTarget+'s':ex.repsTarget+' reps')+' · '+ex.restSecs+'s repos</div></div><span class="prog-chevron">▼</span></div><div class="prog-detail"><div class="ex-detail-section" style="margin-top:12px"><div class="ex-detail-title">🎯 Bénéfice</div><div class="ex-detail-content">'+ex.why+'</div></div><div class="ex-detail-section"><div class="ex-detail-title">📐 Technique</div><div class="ex-detail-content"><ul style="margin:0;padding-left:18px">'+techList+'</ul></div></div><div class="ex-detail-section"><div class="ex-detail-title">📈 Progression</div><div class="ex-detail-content">'+ex.progression+'</div></div>'+altsHtml+linkBtn+'</div>';
+      cont.appendChild(d);
     });
   });
 }
+
 
 // ============================================================
 // SUIVI
@@ -1431,7 +1436,7 @@ window.addEventListener('beforeinstallprompt',e=>{
 // ============================================================
 
 // Enregistrement Service Worker
-if('serviceWorker'in navigator){
+if('serviceWorker'in navigator&&location.hostname==='gw2rewards.github.io'){
   navigator.serviceWorker.register('/BODYFLOW/sw.js')
     .then(reg=>{
       console.log('BodyFlow SW enregistré',reg.scope);
